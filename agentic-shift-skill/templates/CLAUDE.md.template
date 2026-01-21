@@ -1,0 +1,110 @@
+# {{PROJECT_NAME}}
+
+{{PROJECT_DESCRIPTION}}
+
+## Overview
+
+{{OVERVIEW}}
+
+## Architecture
+
+```
+{{DIRECTORY_STRUCTURE}}
+```
+
+### Key Components
+
+{{KEY_COMPONENTS}}
+
+## Tech Stack
+
+- **Language**: {{LANGUAGE}}
+- **Framework**: {{FRAMEWORK}}
+- **Database**: {{DATABASE}}
+- **Key Dependencies**: {{DEPENDENCIES}}
+
+## Getting Started
+
+```bash
+# Install dependencies
+{{INSTALL_COMMAND}}
+
+# Run development server
+{{DEV_COMMAND}}
+
+# Run tests
+{{TEST_COMMAND}}
+
+# Build for production
+{{BUILD_COMMAND}}
+
+# Lint/Format
+{{LINT_COMMAND}}
+```
+
+## Code Conventions
+
+### Naming
+
+- **Files**: {{FILE_NAMING}} (e.g., kebab-case, camelCase)
+- **Variables**: {{VARIABLE_NAMING}}
+- **Functions**: {{FUNCTION_NAMING}}
+- **Classes**: {{CLASS_NAMING}}
+
+### Formatting
+
+- **Indentation**: {{INDENTATION}} (e.g., 2 spaces, 4 spaces, tabs)
+- **Line Length**: {{LINE_LENGTH}} characters max
+- **Quotes**: {{QUOTE_STYLE}} (single/double)
+
+### Documentation
+
+- {{DOCUMENTATION_REQUIREMENTS}}
+
+## Key Patterns
+
+### Error Handling
+
+{{ERROR_HANDLING_PATTERN}}
+
+### API Response Format
+
+{{API_RESPONSE_FORMAT}}
+
+### Database Access
+
+{{DATABASE_ACCESS_PATTERN}}
+
+### Testing
+
+{{TESTING_PATTERN}}
+
+## Do NOT
+
+- {{DO_NOT_1}}
+- {{DO_NOT_2}}
+- {{DO_NOT_3}}
+- {{DO_NOT_4}}
+
+## Important Files
+
+| File | Purpose |
+|------|---------|
+| {{IMPORTANT_FILE_1}} | {{PURPOSE_1}} |
+| {{IMPORTANT_FILE_2}} | {{PURPOSE_2}} |
+| {{IMPORTANT_FILE_3}} | {{PURPOSE_3}} |
+
+## Environment Variables
+
+| Variable | Description | Required |
+|----------|-------------|----------|
+| {{ENV_VAR_1}} | {{DESCRIPTION_1}} | Yes/No |
+| {{ENV_VAR_2}} | {{DESCRIPTION_2}} | Yes/No |
+
+## Deployment
+
+{{DEPLOYMENT_NOTES}}
+
+---
+
+*Generated with The Agentic Shift onboarding skill*

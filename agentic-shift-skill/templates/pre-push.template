@@ -1,0 +1,226 @@
+#!/bin/bash
+#
+# Claude-powered pre-push hook
+# Performs comprehensive security and style audit before push
+#
+# Installation:
+#   cp pre-push.template .git/hooks/pre-push
+#   chmod +x .git/hooks/pre-push
+#
+set -e
+
+echo "═══════════════════════════════════════════════════════════"
+echo "  Claude Code Pre-Push Audit"
+echo "═══════════════════════════════════════════════════════════"
+
+# Get the remote and URL being pushed to
+REMOTE="$1"
+URL="$2"
+
+echo "Remote: $REMOTE"
+echo "URL: $URL"
+echo ""
+
+# Determine the default branch
+DEFAULT_BRANCH=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@' || echo "main")
+
+# Read stdin for push details
+while read local_ref local_sha remote_ref remote_sha; do
+  # Skip branch deletions
+  if [ "$local_sha" = "0000000000000000000000000000000000000000" ]; then
+    continue
+  fi
+
+  BRANCH=$(echo "$local_ref" | sed 's@refs/heads/@@')
+  echo "Branch: $BRANCH"
+
+  # Determine what to compare against
+  if [ "$remote_sha" = "0000000000000000000000000000000000000000" ]; then
+    # New branch - compare against default branch
+    if git rev-parse --verify "origin/$DEFAULT_BRANCH" > /dev/null 2>&1; then
+      RANGE="origin/$DEFAULT_BRANCH...$local_sha"
+    else
+      RANGE="HEAD~10..HEAD"
+    fi
+  else
+    # Existing branch - compare with remote
+    RANGE="$remote_sha...$local_sha"
+  fi
+
+  echo "Comparing: $RANGE"
+  echo ""
+
+  # Get changed files
+  CHANGED=$(git diff --name-only $RANGE 2>/dev/null || git diff --name-only HEAD~5..HEAD)
+
+  if [ -z "$CHANGED" ]; then
+    echo "No files changed. Skipping audit."
+    continue
+  fi
+
+  FILE_COUNT=$(echo "$CHANGED" | wc -l | tr -d ' ')
+  echo "Files to audit ($FILE_COUNT):"
+  echo "$CHANGED" | head -20 | sed 's/^/  /'
+  if [ "$FILE_COUNT" -gt 20 ]; then
+    echo "  ... and $((FILE_COUNT - 20)) more"
+  fi
+  echo ""
+
+  # ============================================
+  # CHECK CLAUDE AVAILABILITY
+  # ============================================
+  if ! command -v claude &> /dev/null; then
+    echo "═══════════════════════════════════════════════════════════"
+    echo "  ⚠ Claude CLI not found - Skipping deep analysis"
+    echo "  Install with: npm install -g @anthropic-ai/claude-code"
+    echo "═══════════════════════════════════════════════════════════"
+    exit 0
+  fi
+
+  # ============================================
+  # SECURITY ANALYSIS
+  # ============================================
+  echo "───────────────────────────────────────────────────────────"
+  echo "  Security Analysis"
+  echo "───────────────────────────────────────────────────────────"
+
+  SECURITY=$(claude --print "Analyze these changed files for security vulnerabilities:
+
+Files:
+$CHANGED
+
+Check for OWASP Top 10 issues:
+1. Injection (SQL, NoSQL, OS command, LDAP)
+2. Broken authentication (weak passwords, session issues)
+3. Sensitive data exposure (logging PII, insecure storage)
+4. XML external entities (XXE)
+5. Broken access control (missing auth checks, IDOR)
+6. Security misconfiguration (debug enabled, default creds)
+7. Cross-site scripting (XSS - stored, reflected, DOM)
+8. Insecure deserialization
+9. Using components with known vulnerabilities
+10. Insufficient logging and monitoring
+
+Also check for:
+- Hardcoded secrets or credentials
+- Dangerous functions (eval, exec, shell commands)
+- Path traversal vulnerabilities
+- Race conditions
+- Cryptographic weaknesses
+
+Respond in this EXACT format:
+SEVERITY: [CRITICAL|HIGH|MEDIUM|LOW|NONE]
+ISSUES:
+- [First issue with file:line if possible]
+- [Second issue]
+- [Or 'None found']
+RECOMMENDATION: [Action to take or 'Proceed with push']" 2>/dev/null || echo "SEVERITY: UNKNOWN
+ISSUES:
+- Could not complete security analysis
+RECOMMENDATION: Manual review recommended")
+
+  echo "$SECURITY"
+  echo ""
+
+  # Block on critical issues
+  if echo "$SECURITY" | grep -q "SEVERITY: CRITICAL"; then
+    echo "╔═══════════════════════════════════════════════════════════╗"
+    echo "║  BLOCKED: Critical security vulnerabilities detected      ║"
+    echo "╚═══════════════════════════════════════════════════════════╝"
+    echo ""
+    echo "Fix the critical issues above before pushing."
+    echo "If you believe this is a false positive, bypass with:"
+    echo "  git push --no-verify"
+    echo ""
+    exit 1
+  fi
+
+  # Prompt on high severity
+  if echo "$SECURITY" | grep -q "SEVERITY: HIGH"; then
+    echo "╔═══════════════════════════════════════════════════════════╗"
+    echo "║  WARNING: High severity issues detected                   ║"
+    echo "╚═══════════════════════════════════════════════════════════╝"
+    echo ""
+    # Check if we're in an interactive terminal
+    if [ -t 0 ]; then
+      read -p "Continue with push anyway? (y/N) " -n 1 -r </dev/tty
+      echo
+      if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        echo "Push cancelled. Fix the issues and try again."
+        exit 1
+      fi
+    else
+      echo "Non-interactive mode: blocking push due to high severity issues"
+      exit 1
+    fi
+  fi
+
+  echo "✓ Security check: $(echo "$SECURITY" | grep "SEVERITY:" | cut -d: -f2 | tr -d ' ')"
+  echo ""
+
+  # ============================================
+  # STYLE & QUALITY CHECK
+  # ============================================
+  echo "───────────────────────────────────────────────────────────"
+  echo "  Style & Quality Check"
+  echo "───────────────────────────────────────────────────────────"
+
+  STYLE=$(claude --print "Review code style and quality for:
+
+$CHANGED
+
+Check for:
+1. Naming conventions (consistent, descriptive)
+2. Function/method length (under 50 lines preferred)
+3. Magic numbers without constants
+4. Missing error handling
+5. Debug/console statements that should be removed
+6. Dead code or unused imports
+7. Inadequate comments for complex logic
+8. Copy-paste code that should be refactored
+
+Be concise and actionable.
+
+Respond in this format:
+QUALITY: [PASS|WARN|FAIL]
+NOTES:
+- [Issue or suggestion]
+- [Or 'Code quality looks good']" 2>/dev/null || echo "QUALITY: UNKNOWN
+NOTES:
+- Could not complete style analysis")
+
+  echo "$STYLE"
+  echo ""
+
+  if echo "$STYLE" | grep -q "QUALITY: FAIL"; then
+    echo "⚠ Style issues found. Consider addressing before merge."
+    # Not blocking, just warning
+  fi
+
+  echo "✓ Style check complete"
+  echo ""
+
+  # ============================================
+  # COMMIT QUALITY
+  # ============================================
+  echo "───────────────────────────────────────────────────────────"
+  echo "  Commit Messages"
+  echo "───────────────────────────────────────────────────────────"
+
+  COMMITS=$(git log --oneline $RANGE 2>/dev/null | head -10)
+  echo "$COMMITS"
+
+  # Check for common bad patterns
+  BAD_COMMITS=$(echo "$COMMITS" | grep -iE "^[a-f0-9]+ (fix|wip|test|asdf|temp|todo|fixup)" || true)
+  if [ -n "$BAD_COMMITS" ]; then
+    echo ""
+    echo "⚠ Some commits may need better messages before merge:"
+    echo "$BAD_COMMITS"
+  fi
+  echo ""
+
+done
+
+echo "═══════════════════════════════════════════════════════════"
+echo "  ✓ Audit Complete - Proceeding with push"
+echo "═══════════════════════════════════════════════════════════"

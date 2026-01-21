@@ -1,0 +1,49 @@
+{
+  "name": "agentic-shift-onboard",
+  "version": "1.0.0",
+  "description": "Interactive onboarding to agent-led development with Claude Code. Teaches CLAUDE.md creation, MCP integration, test-driven agentic development, governance hooks, and custom skill creation.",
+  "author": "The Agentic Shift",
+  "license": "MIT",
+  "repository": "https://github.com/anthropics/agentic-shift-onboard",
+  "keywords": [
+    "onboarding",
+    "tutorial",
+    "claude-code",
+    "developer-experience",
+    "agentic-development"
+  ],
+  "commands": [
+    {
+      "name": "onboard",
+      "description": "Start the Agentic Shift onboarding - interactive tutorial for Claude Code mastery"
+    },
+    {
+      "name": "onboard-foundation",
+      "description": "Module 1: CLAUDE.md creation and project initialization"
+    },
+    {
+      "name": "onboard-mcp",
+      "description": "Module 2: MCP integration and external tooling"
+    },
+    {
+      "name": "onboard-tda",
+      "description": "Module 3: Test-Driven Agentic development cycle"
+    },
+    {
+      "name": "onboard-governance",
+      "description": "Module 4: Pre-commit hooks and quality gates"
+    },
+    {
+      "name": "onboard-skills",
+      "description": "Module 5: Creating custom reusable skills"
+    }
+  ],
+  "entry": "instructions.md",
+  "modules": {
+    "foundation": "modules/01-foundation.md",
+    "mcp": "modules/02-mcp-mastery.md",
+    "tda": "modules/03-tda-cycle.md",
+    "governance": "modules/04-governance.md",
+    "skills": "modules/05-skill-creation.md"
+  }
+}
