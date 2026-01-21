@@ -1,15 +1,31 @@
 # Module 3: Specification-Driven Development
 
+This is the core workflow. Master this before exploring optional add-ons.
+
+## Before You Start
+
+**This workflow works well for:**
+- New features with clear requirements
+- API endpoints, utilities, CRUD operations
+- Bug fixes where you can describe expected behavior
+
+**Use traditional coding instead for:**
+- Security-critical code (auth, payments, encryption)
+- Performance-critical code requiring optimization
+- Legacy code without tests
+- Exploratory/research work
+
+See [Limitations](../../LIMITATIONS.md) for details.
+
+---
+
 ## Learning Objectives
 
-By the end of this module, learners will:
-- Write effective specifications (PRDs, user stories, or feature briefs)
+By the end of this module, you will:
+- Write a spec that Claude can work from
 - Guide Claude through context gathering
-- Review and approve Claude's execution plan
-- Review Claude-generated tests before implementation
-- Use AI-assisted code review (Claude or third-party tools)
-- Let Claude iterate on test failures until all pass
-- Validate and approve the final implementation
+- Review generated tests and code
+- Approve the final implementation
 
 ## The New Workflow
 
@@ -26,6 +42,16 @@ Specify → Context → Plan → Generate Tests → Generate Code → Review →
 
 **Your job**: Define WHAT you want, approve at checkpoints
 **Claude's job**: Figure out HOW, run tests, iterate until passing
+
+### Common Pitfalls
+
+| Pitfall | Mitigation |
+|---------|------------|
+| Vague specs → wrong code | Be specific. Include examples. |
+| Rubber-stamping approvals | Actually read the diff. You own the code. |
+| Tests pass but code is wrong | Tests are samples, not proofs. Review logic. |
+| Claude hallucinates APIs | Verify imports and library calls exist. |
+| Infinite iteration loop | If stuck after 3 attempts, debug manually. |
 
 ## The Specification-Driven Cycle
 
@@ -301,53 +327,34 @@ Claude: "Here's the code: [shows diff]"
 
 At this point, the code is written but not yet validated.
 
-## Step 6: Code Review (AI-Assisted)
+## Step 6: Code Review (Optional)
 
-Before running tests, the code goes through an automated review. This catches issues early—before the test-fix cycle.
+You can add an AI review step before running tests. **This is optional**—skip it for simple features.
 
-### Review Options
+### Quick Review (Default)
 
-**Option A: Claude's Built-in Review**
+Just ask Claude:
 ```
-Claude: "Running code review on the implementation..."
-
-Review Results:
-✓ Follows project patterns (uses existing error format)
-✓ No hardcoded secrets detected
-⚠ Consider: Password hashing is synchronous—use async bcrypt.hash()
-✓ Error handling looks correct
+"Review this code for obvious issues before we run tests."
 ```
 
-**Option B: Third-Party AI Review Tools**
+### Third-Party Tools (Optional Add-on)
 
-Integrate external code review tools via MCP or CLI:
+For teams wanting additional review layers:
 
-| Tool | What It Checks | Integration |
-|------|----------------|-------------|
-| **CodeRabbit** | Logic, security, best practices | GitHub PR integration |
-| **Codacy** | Code quality, patterns | CLI or MCP |
-| **SonarQube** | Security, bugs, code smells | CLI: `sonar-scanner` |
-| **Snyk** | Security vulnerabilities | CLI: `snyk code test` |
+| Tool | Use Case | Setup |
+|------|----------|-------|
+| Snyk | Security vulnerabilities | `snyk code test` |
+| SonarQube | Code quality | Requires server setup |
+| CodeRabbit | PR review automation | GitHub integration |
 
-**Example with Snyk:**
-```bash
-# Claude can run this as part of review
-snyk code test src/routes/users.ts
-```
+See your team's existing tooling. Don't add complexity you don't need.
 
-**Example with CodeRabbit (via GitHub MCP):**
-```
-Claude: "I'll create a draft PR for CodeRabbit to review..."
-[Creates PR, waits for CodeRabbit analysis]
-Claude: "CodeRabbit found 2 suggestions: [shows feedback]"
-```
+### Your Checkpoint
 
-### Your Review Checkpoint
-
-After AI review, you decide:
-- **Proceed**: "Looks good, run the tests"
-- **Fix first**: "Address the async bcrypt suggestion before testing"
-- **Ignore warning**: "The sync version is fine for our use case, proceed"
+- **Proceed**: "Run the tests"
+- **Fix first**: "Address X before testing"
+- **Skip review**: Move directly to validation
 
 ## Step 7: Validation (Test-Fix Loop)
 
@@ -510,3 +517,29 @@ Claude handles:
 - Iterating on test failures until all pass
 
 Your job is specification, plan approval, and final validation—not debugging or manual iteration.
+
+---
+
+## Cost Awareness
+
+Each iteration costs API tokens. Rough estimates:
+
+| Feature Complexity | Iterations | Estimated Cost |
+|--------------------|------------|----------------|
+| Simple (utility function) | 1-2 | $0.50-1.00 |
+| Medium (API endpoint) | 2-4 | $1.00-3.00 |
+| Complex (multi-file feature) | 4-8 | $3.00-10.00 |
+
+**Tips to reduce cost:**
+- Write clear specs (fewer misunderstandings = fewer iterations)
+- Add context to CLAUDE.md (Claude asks fewer questions)
+- Break large features into smaller specs
+- Set token budgets in Anthropic Console
+
+---
+
+## Next Steps
+
+- **Add-ons**: [MCP integrations](02-mcp-mastery.md), [Git hooks](04-governance.md)
+- **Limitations**: [When not to use this workflow](../../LIMITATIONS.md)
+- **Enterprise**: [Compliance and security controls](../../ENTERPRISE.md)

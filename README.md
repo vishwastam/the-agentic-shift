@@ -1,104 +1,77 @@
 # The Agentic Shift
 
-Transform your team from manual coders into **Architects and Reviewers** with Claude Code.
+Ship features faster with AI-assisted development.
 
-## The Core Workflow
+## Start Here
+
+| I want to... | Go to |
+|--------------|-------|
+| **Get started in 5 minutes** | [Quick Start](QUICK_START.md) |
+| **Know if this is right for me** | [Limitations](LIMITATIONS.md) |
+| **Enterprise/compliance needs** | [Enterprise Guide](ENTERPRISE.md) |
+| **Deep dive on the workflow** | [Full Roadmap](THE_AGENTIC_SHIFT_ROADMAP.md) |
+
+## The Workflow (30-second version)
 
 ```
-Specify → Context → Plan → Generate Tests → Generate Code → Review → Validate
-  [You]   [Claude]  [Interactive]  [Claude]    [Claude]      [AI]    [Claude+You]
+You write spec → Claude asks questions → Claude generates code → You approve
 ```
 
-**Your job**: Define WHAT should exist (PRD, spec, user story), approve at checkpoints
-**Claude's job**: Figure out HOW, run AI review, iterate on test failures until passing
-
-## What's Included
-
-### 1. Strategic Roadmap
-
-[`THE_AGENTIC_SHIFT_ROADMAP.md`](./THE_AGENTIC_SHIFT_ROADMAP.md)
-
-A self-paced guide covering:
-- Environment setup and security
-- The Specification-Driven workflow
-- MCP integration (optional)
-- Governance with git hooks (optional)
-
-### 2. Interactive Onboarding Skill
-
-[`agentic-shift-skill/`](./agentic-shift-skill/)
-
-Hands-on training with 5 modules:
-
-| Module | Topic | Required? |
-|--------|-------|-----------|
-| Foundation | CLAUDE.md and context | Yes |
-| Spec-Driven Dev | Write specs, review generated code | Yes (core) |
-| MCP | External tool integration | Optional |
-| Governance | Git hooks | Optional |
-| Skills | Custom workflows | Yes |
+That's it. Everything else is optional.
 
 ## Quick Start
 
 ```bash
-# Clone this repo
-git clone https://github.com/vishwastam/the-agentic-shift.git
-
-# Install the skill
-cp -r the-agentic-shift/agentic-shift-skill ~/.claude/skills/agentic-shift-onboard
-
-# Start onboarding
-claude /onboard
+# Prerequisites: Claude Code CLI installed and authenticated
+cd your-project
+claude /init
+# Add your tech stack to CLAUDE.md
+claude "Here's my feature spec: [paste spec]. Ask questions, then implement."
 ```
 
-## Example: The New Way to Build Features
+## What's in This Repo
 
-**1. You write a spec:**
-```markdown
-## Feature: User Registration
-
-### Requirements
-- POST /api/users endpoint
-- Accept email and password
-- Validate email format, password min 8 chars
-- Return 400 for validation errors
-- Return 409 if email exists
+```
+├── QUICK_START.md          # 5-minute setup (start here)
+├── LIMITATIONS.md          # When NOT to use this
+├── ENTERPRISE.md           # Compliance, security, large orgs
+├── THE_AGENTIC_SHIFT_ROADMAP.md  # Full deep-dive guide
+│
+└── agentic-shift-skill/    # Interactive training (optional)
+    ├── modules/
+    │   ├── 01-foundation.md      # CLAUDE.md basics
+    │   ├── 02-mcp-mastery.md     # GitHub, Figma, DB connections (optional)
+    │   ├── 03-tda-cycle.md       # Core workflow (the important one)
+    │   ├── 04-governance.md      # Git hooks (optional)
+    │   └── 05-skill-creation.md  # Custom workflows (optional)
+    └── templates/
+        ├── CLAUDE.md.template
+        ├── SPEC.md.template
+        └── pre-commit.template
 ```
 
-**2. Give spec to Claude:**
-```
-Here's my feature spec: [paste spec]
+## Core vs Optional
 
-Ask me clarifying questions about my codebase, then:
-1. Create an execution plan for my approval
-2. Propose tests based on requirements
-3. Wait for my approval
-4. Implement code, run AI review
-5. Run tests and iterate until all pass
-```
-
-**3. Answer Claude's questions:**
-```
-"We use Prisma + PostgreSQL. Put it in src/routes/users.ts.
-Use bcrypt for passwords. Errors are { error: string, code: number }."
-```
-
-**4. Review execution plan, approve or adjust.**
-
-**5. Review generated tests, approve.**
-
-**6. Claude runs AI review, runs tests, fixes failures, presents final diff for your approval.**
-
-## Templates
-
-- `SPEC.md.template` - Feature specification template
-- `CLAUDE.md.template` - Project context template
-- `pre-commit.template` - Security hook
+| Component | Required? | When to Use |
+|-----------|-----------|-------------|
+| CLAUDE.md | Yes | Always—gives Claude context |
+| Spec → Generate → Approve workflow | Yes | Every feature |
+| MCP integrations (GitHub, Figma, etc.) | No | If you need external tool access |
+| Pre-commit hooks | No | When you want automated security checks |
+| Custom skills | No | When you have repeatable workflows |
+| AI code review tools | No | When you want additional review layers |
 
 ## Requirements
 
-- Claude Code CLI installed and authenticated
-- A project to work with
+- Claude Code CLI (`npm install -g @anthropic-ai/claude-code`)
+- Authenticated (`claude login`)
+
+## Install the Training Skill (Optional)
+
+```bash
+cp -r agentic-shift-skill ~/.claude/skills/agentic-shift-onboard
+claude /onboard
+```
 
 ## License
 

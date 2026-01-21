@@ -1,12 +1,18 @@
-# The Agentic Shift: Strategic Roadmap
+# The Agentic Shift: Deep Dive Guide
 
-> A framework for transitioning software teams from manual coding to agent-led development with Claude Code.
+> Optional reading. Start with [Quick Start](QUICK_START.md) if you just want to get going.
+
+This document covers the full workflow in detail, including team rollout considerations, MCP configuration, and governance. Read this when you're ready to go beyond the basics.
+
+**Also see:**
+- [Limitations](LIMITATIONS.md) — When not to use this
+- [Enterprise Guide](ENTERPRISE.md) — Compliance, security, large orgs
 
 ---
 
-## Executive Summary
+## Overview
 
-The Agentic Shift transforms developers from manual coders into **Architects and Reviewers**—professionals who define intent, establish constraints, and validate outcomes while Claude Code handles implementation details.
+The core workflow is simple: you write specs, Claude generates code, you approve.
 
 ### The New Developer Role
 

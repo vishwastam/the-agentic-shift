@@ -1,51 +1,45 @@
-# The Agentic Shift - Onboarding Skill
+# Agentic Shift - Onboarding Skill
 
-Interactive onboarding for Claude Code. Learn to work as an **Architect and Reviewer**.
+Interactive training for AI-assisted development.
 
-## The Core Workflow
-
-```
-Specify → Context → Plan → Generate Tests → Generate Code → Review → Validate
-  [You]   [Claude]  [Interactive]  [Claude]    [Claude]      [AI]    [Claude+You]
-```
-
-You define WHAT. Claude figures out HOW, runs AI review, iterates on test failures until passing.
-
-## Installation
+## Install
 
 ```bash
 cp -r agentic-shift-skill ~/.claude/skills/agentic-shift-onboard
 claude /onboard
 ```
 
-## Modules
+## What You'll Learn
 
-| Module | Topic | Required? |
-|--------|-------|-----------|
-| 1 | **Foundation** - CLAUDE.md and context | Yes |
-| 2 | **MCP** - External tool integration | Optional |
-| 3 | **Spec-Driven Dev** - The core workflow | Yes |
-| 4 | **Governance** - Git hooks | Optional |
-| 5 | **Skills** - Custom workflows | Yes |
+```
+You write spec → Claude generates code → You approve
+```
+
+Takes 5-10 minutes to complete your first feature.
 
 ## Commands
 
-```bash
-claude /onboard              # Full tutorial
-claude /onboard-foundation   # Module 1
-claude /onboard-mcp          # Module 2 (optional)
-claude /onboard-tda          # Module 3 (core)
-claude /onboard-governance   # Module 4 (optional)
-claude /onboard-skills       # Module 5
-```
+| Command | What it does |
+|---------|--------------|
+| `/onboard` | Full tutorial (recommended) |
+| `/onboard-foundation` | Just CLAUDE.md setup |
+| `/onboard-tda` | Just the core workflow |
+
+## Optional Add-ons
+
+Only install these when you need them:
+
+| Command | When to use |
+|---------|-------------|
+| `/onboard-mcp` | Need GitHub, Figma, or database access |
+| `/onboard-governance` | Want automated security checks |
+| `/onboard-skills` | Have repeatable workflows to automate |
 
 ## Templates
 
-- `SPEC.md.template` - Feature specification
-- `CLAUDE.md.template` - Project context
-- `pre-commit.template` - Security hook
-- `pre-push.template` - Optional audit hook
-
-## License
-
-MIT
+```
+templates/
+├── CLAUDE.md.template   # Project context (required)
+├── SPEC.md.template     # Feature specs (optional)
+└── pre-commit.template  # Security hook (optional)
+```
