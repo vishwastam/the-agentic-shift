@@ -21,8 +21,9 @@ By the end of this module, learners will:
 
 | Situation | MCP Helpful? |
 |-----------|--------------|
-| You frequently reference GitHub issues | Yes |
-| You need database schema context | Yes |
+| You frequently reference GitHub issues | Yes - GitHub MCP |
+| You need database schema context | Yes - Postgres MCP |
+| You build frontend from Figma designs | Yes - Figma MCP |
 | You work with a single codebase | Maybe not |
 | You're just getting started | Skip for now |
 
@@ -74,6 +75,67 @@ The MCP will be available in your next session.
 "Summarize my recent PRs"
 ```
 
+## Figma MCP (Frontend Developers)
+
+If you work with Figma designs, this MCP lets Claude reference your design files directly.
+
+### Step 1: Get Figma Access Token
+
+```
+Figma → Settings → Account → Personal Access Tokens → Create new token
+```
+
+### Step 2: Set Environment Variable
+
+```bash
+export FIGMA_ACCESS_TOKEN="your_token_here"
+source ~/.zshrc
+```
+
+### Step 3: Add to MCP Config
+
+Update `~/.claude/mcp_servers.json`:
+
+```json
+{
+  "mcpServers": {
+    "github": { ... },
+    "figma": {
+      "command": "npx",
+      "args": ["-y", "@anthropic-ai/mcp-server-figma"],
+      "env": {
+        "FIGMA_ACCESS_TOKEN": "${FIGMA_ACCESS_TOKEN}"
+      }
+    }
+  }
+}
+```
+
+### Test It
+
+```
+"Get the design specs for this Figma frame: [paste Figma URL]"
+"Generate a React component matching this design: [Figma URL]"
+```
+
+### Use in Spec-Driven Development
+
+With Figma MCP, your spec can reference designs directly:
+
+```markdown
+## Feature: Profile Card Component
+
+### Design
+Figma: https://figma.com/file/xxx/Profile-Card
+
+### Requirements
+- Match the design exactly
+- Use our existing Button and Avatar components
+- Responsive: stack vertically on mobile
+```
+
+Claude will pull colors, spacing, typography directly from Figma.
+
 ## Other MCP Servers
 
 | Server | Use Case | Setup |
@@ -81,6 +143,7 @@ The MCP will be available in your next session.
 | Postgres | Database schema/queries | Requires `DATABASE_URL` |
 | Filesystem | Enhanced file ops | Path configuration |
 | Memory | Persistent storage | Minimal config |
+| **Figma** | Design specs for frontend | Requires `FIGMA_ACCESS_TOKEN` |
 
 Find more at: [MCP Server Registry](https://github.com/modelcontextprotocol/servers)
 

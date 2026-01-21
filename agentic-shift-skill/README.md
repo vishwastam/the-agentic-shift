@@ -5,11 +5,11 @@ Interactive onboarding for Claude Code. Learn to work as an **Architect and Revi
 ## The Core Workflow
 
 ```
-Specify → Context → Plan → Generate Tests → Generate Code → Validate
-  [You]   [Claude]  [Interactive]  [Claude]    [Claude]       [You]
+Specify → Context → Plan → Generate Tests → Generate Code → Review → Validate
+  [You]   [Claude]  [Interactive]  [Claude]    [Claude]      [AI]    [Claude+You]
 ```
 
-You define WHAT. Claude figures out HOW (with your approval at the Plan stage).
+You define WHAT. Claude figures out HOW, runs AI review, iterates on test failures until passing.
 
 ## Installation
 

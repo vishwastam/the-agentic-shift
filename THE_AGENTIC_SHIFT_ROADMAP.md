@@ -135,6 +135,7 @@ MCPs extend Claude Code with real-time access to external systems. Select based 
 | **GitHub** | PR reviews, issue triage, code search | High | Low |
 | **Filesystem** | Enhanced file operations | High | Low |
 | **Postgres** | Schema exploration, query generation | High | Medium |
+| **Figma** | Frontend: design specs, component generation | High (frontend) | Low |
 | **Slack** | Team notifications, standup automation | Medium | Low |
 | **Jira** | Sprint planning, ticket management | Medium | Medium |
 | **Playwright** | E2E test generation, browser automation | Medium | High |
@@ -171,6 +172,13 @@ Create or update `~/.claude/mcp_servers.json`:
     "filesystem": {
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-filesystem", "/path/to/allowed/directory"]
+    },
+    "figma": {
+      "command": "npx",
+      "args": ["-y", "@anthropic-ai/mcp-server-figma"],
+      "env": {
+        "FIGMA_ACCESS_TOKEN": "${FIGMA_ACCESS_TOKEN}"
+      }
     }
   }
 }
@@ -222,27 +230,27 @@ claude "Send a test message to #engineering-test channel"
 This is the core workflow pattern:
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                                                                 │
-│  1. SPECIFY       2. CONTEXT        3. PLAN        4. GENERATE  │
-│     (You)            (Claude)          (Interactive)  (Claude)  │
-│                                                                 │
-│  PRD/spec/story   "What patterns    "Here's my      Tests first │
-│  describing WHAT  do you use?"      execution       then code   │
-│                                     plan..."                    │
-│                                     [You approve]               │
-│                                                                 │
-│         └─────────────┴─────────────────┴───────────────┘       │
-│                                ▼                                │
-│                         5. VALIDATE                             │
-│                            (You review)                         │
-│                                                                 │
-│                   Run tests, review code,                       │
-│                   approve or iterate                            │
-└─────────────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────────────────┐
+│                                                                           │
+│  1. SPECIFY    2. CONTEXT     3. PLAN       4. GENERATE    5. REVIEW      │
+│     (You)        (Claude)       (Interactive)  (Claude)       (AI)        │
+│                                                                           │
+│  PRD/spec/    "What patterns  "Here's my    Tests first,   AI-assisted   │
+│  story        do you use?"    execution     then code      code review   │
+│                               plan..."                                    │
+│                               [You approve]                               │
+│                                                                           │
+│         └────────────┴──────────────┴──────────────┴──────────────┘       │
+│                                      ▼                                    │
+│                               6. VALIDATE                                 │
+│                            (Claude iterates)                              │
+│                                                                           │
+│              Run tests → Fix failures → Repeat until passing              │
+│                         Then you approve final result                     │
+└───────────────────────────────────────────────────────────────────────────┘
 ```
 
-**Key Principle**: You define WHAT should exist. Claude figures out HOW, with checkpoints for your approval—especially at the Plan stage.
+**Key Principle**: You define WHAT should exist. Claude figures out HOW, runs AI review, iterates on test failures, and presents the final result for your approval.
 
 #### Example Session
 
@@ -281,7 +289,19 @@ use your existing TokenError class. Does this look right?"
 
 **Step 5: Claude proposes tests, you approve**
 
-**Step 6: Claude implements, tests pass, you review the code**
+**Step 6: Claude implements, runs AI code review**
+```
+"Code review complete. Found 1 suggestion: use async bcrypt.
+Should I fix this before running tests?"
+```
+
+**Step 7: Claude runs tests, iterates on failures**
+```
+"Running tests... 3/4 passing. Fixing duplicate email handler..."
+"Running tests... 4/4 passing. Here's the final diff for your approval."
+```
+
+**Step 8: You approve the final implementation**
 
 ### 3.3 Daily Workflow Integration
 

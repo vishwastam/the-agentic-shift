@@ -7,7 +7,9 @@ By the end of this module, learners will:
 - Guide Claude through context gathering
 - Review and approve Claude's execution plan
 - Review Claude-generated tests before implementation
-- Validate generated code through automated testing
+- Use AI-assisted code review (Claude or third-party tools)
+- Let Claude iterate on test failures until all pass
+- Validate and approve the final implementation
 
 ## The New Workflow
 
@@ -18,35 +20,35 @@ Developer writes code → Developer writes tests → Debug → Repeat
 
 ### Agentic Way
 ```
-Specify → Context → Plan → Generate Tests → Generate Code → Validate
-  [You]   [Claude]  [Interactive]  [Claude]    [Claude]       [You]
+Specify → Context → Plan → Generate Tests → Generate Code → Review → Validate
+  [You]   [Claude]  [Interactive]  [Claude]    [Claude]      [AI]    [Claude+You]
 ```
 
-**Your job**: Define WHAT you want
-**Claude's job**: Figure out HOW, with your approval at checkpoints
+**Your job**: Define WHAT you want, approve at checkpoints
+**Claude's job**: Figure out HOW, run tests, iterate until passing
 
 ## The Specification-Driven Cycle
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                                                                 │
-│  1. SPECIFY       2. CONTEXT        3. PLAN        4. GENERATE  │
-│     (You)            (Claude)          (Interactive)  (Claude)  │
-│                                                                 │
-│  "I need user      "What auth?      "Here's my      Tests first │
-│   registration"    Where do users   plan..."        then code   │
-│                    live?"           [You approve]               │
-│                                                                 │
-│         │              │                 │               │      │
-│         └──────────────┴─────────────────┴───────────────┘      │
-│                                 ▼                               │
-│                          5. VALIDATE                            │
-│                             (You review)                        │
-│                                                                 │
-│                    Run tests, review code,                      │
-│                    approve or iterate                           │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────────────────┐
+│                                                                           │
+│  1. SPECIFY    2. CONTEXT     3. PLAN       4. GENERATE    5. REVIEW      │
+│     (You)        (Claude)       (Interactive)  (Claude)       (AI)        │
+│                                                                           │
+│  "I need user   "What auth?   "Here's my    Tests first,   AI-assisted   │
+│   registration" Where do      plan..."      then code      code review   │
+│                 users live?"  [You approve]                              │
+│                                                                           │
+│         │            │              │              │              │       │
+│         └────────────┴──────────────┴──────────────┴──────────────┘       │
+│                                      ▼                                    │
+│                               6. VALIDATE                                 │
+│                            (Claude runs tests)                            │
+│                                                                           │
+│                    Run tests → Fix failures → Repeat                      │
+│                    until all tests pass, then you approve                 │
+│                                                                           │
+└───────────────────────────────────────────────────────────────────────────┘
 ```
 
 ## Step 1: Write a Specification
@@ -288,22 +290,131 @@ Before Claude implements, review the tests:
 
 Say "yes" to proceed, or "add test for X" to expand.
 
-## Step 5: Code Generation & Validation
+## Step 5: Code Generation
 
-Claude implements code to pass the tests, then you validate.
-
-### The Loop
+Claude implements code based on the approved tests.
 
 ```
-Claude: "Here's the implementation. Running tests..."
-Claude: "4/4 tests passing. Here's the code: [shows diff]"
+Claude: "Generating implementation based on the test cases..."
+Claude: "Here's the code: [shows diff]"
+```
 
-You: Review the diff
-  - Does it follow your patterns?
-  - Any security concerns?
-  - Approve or request changes
+At this point, the code is written but not yet validated.
 
-You: "Looks good" or "Change X to Y"
+## Step 6: Code Review (AI-Assisted)
+
+Before running tests, the code goes through an automated review. This catches issues early—before the test-fix cycle.
+
+### Review Options
+
+**Option A: Claude's Built-in Review**
+```
+Claude: "Running code review on the implementation..."
+
+Review Results:
+✓ Follows project patterns (uses existing error format)
+✓ No hardcoded secrets detected
+⚠ Consider: Password hashing is synchronous—use async bcrypt.hash()
+✓ Error handling looks correct
+```
+
+**Option B: Third-Party AI Review Tools**
+
+Integrate external code review tools via MCP or CLI:
+
+| Tool | What It Checks | Integration |
+|------|----------------|-------------|
+| **CodeRabbit** | Logic, security, best practices | GitHub PR integration |
+| **Codacy** | Code quality, patterns | CLI or MCP |
+| **SonarQube** | Security, bugs, code smells | CLI: `sonar-scanner` |
+| **Snyk** | Security vulnerabilities | CLI: `snyk code test` |
+
+**Example with Snyk:**
+```bash
+# Claude can run this as part of review
+snyk code test src/routes/users.ts
+```
+
+**Example with CodeRabbit (via GitHub MCP):**
+```
+Claude: "I'll create a draft PR for CodeRabbit to review..."
+[Creates PR, waits for CodeRabbit analysis]
+Claude: "CodeRabbit found 2 suggestions: [shows feedback]"
+```
+
+### Your Review Checkpoint
+
+After AI review, you decide:
+- **Proceed**: "Looks good, run the tests"
+- **Fix first**: "Address the async bcrypt suggestion before testing"
+- **Ignore warning**: "The sync version is fine for our use case, proceed"
+
+## Step 7: Validation (Test-Fix Loop)
+
+Claude runs tests and **iterates until all pass**. You don't need to manually debug.
+
+### The Automated Loop
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                                                             │
+│  Claude: "Running tests..."                                 │
+│                                                             │
+│  Test Results: 3/4 passing                                  │
+│  ✓ creates user with valid email and password              │
+│  ✓ returns 400 for invalid email                           │
+│  ✓ returns 400 for short password                          │
+│  ✗ returns 409 for duplicate email                         │
+│                                                             │
+│  Error: Expected 409, got 500                               │
+│  Cause: Missing unique constraint handler                   │
+│                                                             │
+│  Claude: "Fixing the duplicate email handling..."           │
+│  [Makes targeted fix]                                       │
+│                                                             │
+│  Claude: "Running tests again..."                           │
+│  Test Results: 4/4 passing ✓                               │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### What Claude Does Automatically
+
+1. **Runs the test suite** (or specific tests for the feature)
+2. **Analyzes failures** - reads error messages, stack traces
+3. **Makes targeted fixes** - only changes what's needed
+4. **Re-runs tests** - verifies the fix worked
+5. **Repeats** until all tests pass (or asks for help if stuck)
+
+### When Claude Asks for Help
+
+```
+Claude: "I've tried 3 approaches to fix this test but it's still failing.
+The issue seems to be with the database connection in tests.
+
+Options:
+1. Check if test database is running
+2. Review the test setup in jest.setup.ts
+3. I can show you the error details
+
+What would you like to do?"
+```
+
+### Your Final Review
+
+Once all tests pass:
+
+```
+Claude: "All 4 tests passing. Here's the final diff:"
+
+[Shows complete diff with all changes]
+
+You: Review the implementation
+  - Does it match the spec?
+  - Any concerns with the approach?
+  - Ready to merge?
+
+You: "Approved" or "One change: [specific request]"
 ```
 
 ## Exercise: Your First Spec-Driven Feature
@@ -354,19 +465,26 @@ Claude presents a plan. You approve, adjust, or add constraints.
 
 Claude shows tests. You approve or adjust.
 
-### Step 6: Validate Implementation
+### Step 6: Review AI-Generated Code
 
-Tests run, you review the code, done.
+Claude generates code, runs AI review. You approve or request fixes.
+
+### Step 7: Validate Implementation
+
+Claude runs tests, fixes failures automatically, and presents final diff for your approval.
 
 ## When This Works Best
 
 | Good Fit | Less Ideal |
 |----------|------------|
 | New features with clear requirements | Exploratory/research work |
-| Bug fixes (spec = "this should work") | UI/visual work |
-| API endpoints | Performance optimization |
-| Utility functions | Complex refactoring |
+| Bug fixes (spec = "this should work") | Performance optimization |
+| API endpoints | Complex refactoring |
+| Utility functions | |
 | Business logic | |
+| Frontend components (with Figma MCP) | |
+
+> **Frontend Developers**: Use the Figma MCP integration (see Module 2) to let Claude reference your designs directly. Your spec becomes: "Implement the component from this Figma frame."
 
 ## Checkpoint
 
@@ -375,7 +493,9 @@ Module 3 is complete when:
 - [ ] Claude asked context questions and you answered
 - [ ] Claude presented an execution plan and you approved it
 - [ ] Claude generated tests from your spec
-- [ ] Tests pass with Claude's implementation
+- [ ] Code passed AI review (Claude or third-party tools)
+- [ ] Claude iterated until all tests passed
+- [ ] You approved the final implementation
 
 ## Key Takeaway
 
@@ -385,7 +505,8 @@ Claude handles:
 - Asking the right questions
 - Creating detailed execution plans
 - Writing tests from requirements
-- Implementing to pass tests
-- Iterating on feedback
+- Implementing code
+- Running AI-assisted code review
+- Iterating on test failures until all pass
 
-Your job is specification, plan approval, and validation—not implementation.
+Your job is specification, plan approval, and final validation—not debugging or manual iteration.

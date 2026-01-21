@@ -5,12 +5,12 @@ Transform your team from manual coders into **Architects and Reviewers** with Cl
 ## The Core Workflow
 
 ```
-Specify → Context → Plan → Generate Tests → Generate Code → Validate
-  [You]   [Claude]  [Interactive]  [Claude]    [Claude]       [You]
+Specify → Context → Plan → Generate Tests → Generate Code → Review → Validate
+  [You]   [Claude]  [Interactive]  [Claude]    [Claude]      [AI]    [Claude+You]
 ```
 
-**Your job**: Define WHAT should exist (PRD, spec, user story)
-**Claude's job**: Figure out HOW, with your approval at checkpoints (especially the Plan)
+**Your job**: Define WHAT should exist (PRD, spec, user story), approve at checkpoints
+**Claude's job**: Figure out HOW, run AI review, iterate on test failures until passing
 
 ## What's Included
 
@@ -73,7 +73,8 @@ Ask me clarifying questions about my codebase, then:
 1. Create an execution plan for my approval
 2. Propose tests based on requirements
 3. Wait for my approval
-4. Implement code to pass the tests
+4. Implement code, run AI review
+5. Run tests and iterate until all pass
 ```
 
 **3. Answer Claude's questions:**
@@ -84,7 +85,9 @@ Use bcrypt for passwords. Errors are { error: string, code: number }."
 
 **4. Review execution plan, approve or adjust.**
 
-**5. Review generated tests, approve, validate implementation.**
+**5. Review generated tests, approve.**
+
+**6. Claude runs AI review, runs tests, fixes failures, presents final diff for your approval.**
 
 ## Templates
 

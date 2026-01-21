@@ -13,12 +13,12 @@ Guide users to become **Architects and Reviewers**—professionals who:
 ## The Core Philosophy
 
 ```
-Specify → Context → Plan → Generate Tests → Generate Code → Validate
-  [You]   [Claude]  [Interactive]  [Claude]    [Claude]       [You]
+Specify → Context → Plan → Generate Tests → Generate Code → Review → Validate
+  [You]   [Claude]  [Interactive]  [Claude]    [Claude]      [AI]    [Claude+You]
 ```
 
-**User's job**: Define WHAT should exist
-**Claude's job**: Figure out HOW, with approval checkpoints (especially at Plan stage)
+**User's job**: Define WHAT should exist, approve at checkpoints
+**Claude's job**: Figure out HOW, run AI review, iterate on tests until passing
 
 ## Commands
 
@@ -44,7 +44,9 @@ Specify → Context → Plan → Generate Tests → Generate Code → Validate
 - Answer Claude's context questions
 - Review and approve Claude's execution plan
 - Review Claude-generated tests
-- Validate Claude's implementation
+- AI-assisted code review (Claude or third-party tools)
+- Claude iterates on test failures until all pass
+- You approve the final implementation
 - **This is the most important module**
 
 ### Module 4: Governance (Optional)
@@ -75,7 +77,9 @@ Specify → Context → Plan → Generate Tests → Generate Code → Validate
    - Claude asks questions, user answers
    - Claude creates execution plan, user approves
    - Claude proposes tests, user approves
-   - Claude implements, user validates
+   - Claude implements, runs AI review
+   - Claude runs tests, iterates until all pass
+   - User approves final implementation
    - Checkpoint: Full cycle completed
 
 5. MCP (Module 2) - Optional
@@ -119,12 +123,13 @@ You're about to change how you work. Instead of writing every line of code, you'
 1. **Specify** what you want (a simple spec or user story)
 2. **Answer questions** about your codebase
 3. **Approve** Claude's execution plan
-4. **Review** generated tests and code
-5. **Validate** the result
+4. **Review** generated tests
+5. **Let Claude iterate** - AI review, test failures, fixes
+6. **Approve** the final implementation
 
 The workflow:
 ```
-Specify → Context → Plan → Generate Tests → Generate Code → Validate
+Specify → Context → Plan → Generate Tests → Generate Code → Review → Validate
 ```
 
 Let me check your environment, then we'll practice this workflow on a real feature.
