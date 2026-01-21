@@ -12,10 +12,11 @@ The Agentic Shift transforms developers from manual coders into **Architects and
 
 | Traditional Role | Agentic Role |
 |-----------------|--------------|
-| Write every line of code | Define specifications and constraints |
-| Debug through trial and error | Write tests that describe desired behavior |
-| Context-switch between tools | Orchestrate AI with integrated tooling |
-| Manual code review | Validate AI-generated solutions |
+| Write every line of code | Write specs describing WHAT you want |
+| Write tests manually | Review Claude-generated tests |
+| Debug through trial and error | Validate against spec requirements |
+| Context-switch between tools | Answer Claude's context questions |
+| Manual code review | Approve or iterate on generated code |
 | Repeat patterns manually | Capture patterns as reusable skills |
 
 ---
@@ -216,62 +217,62 @@ claude "Send a test message to #engineering-test channel"
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### 3.2 The Test-Driven Agentic (TDA) Cycle
+### 3.2 The Specification-Driven Cycle
 
 This is the core workflow pattern:
 
 ```
-    ┌─────────────────────────────────────────┐
-    │                                         │
-    │   1. WRITE        2. PROMPT             │
-    │      TEST    →       CLAUDE             │
-    │   (Human)         (Agent)               │
-    │                                         │
-    │        ↑              ↓                 │
-    │                                         │
-    │   4. REFINE  ←    3. RUN                │
-    │      PROMPT        TESTS                │
-    │   (If failing)    (Automated)           │
-    │                                         │
-    └─────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                                                             │
+│  1. SPECIFY          2. CONTEXT         3. GENERATE         │
+│     (You write)         (Claude asks)      (Claude writes)  │
+│                                                             │
+│  PRD/spec/story      "What patterns     Tests first,        │
+│  describing WHAT     do you use?"       then code           │
+│                                                             │
+│         └──────────────────┬────────────────────┘           │
+│                            ▼                                │
+│                     4. VALIDATE                             │
+│                        (You review)                         │
+│                                                             │
+│                  Run tests, review code,                    │
+│                  approve or iterate                         │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-**Key Principle**: Tests are your specification language. Write what you want, let Claude figure out how.
+**Key Principle**: You define WHAT should exist. Claude figures out HOW, with checkpoints for your approval.
 
-#### Example TDA Session
+#### Example Session
 
-```bash
-# Step 1: Write a failing test
-cat > tests/auth.test.ts << 'EOF'
-import { validateToken, TokenError } from '../src/auth';
+**Step 1: You write a spec**
+```markdown
+## Feature: JWT Token Validation
 
-describe('validateToken', () => {
-  it('returns user data for valid JWT', async () => {
-    const token = createTestJWT({ userId: '123', role: 'admin' });
-    const result = await validateToken(token);
-    expect(result.userId).toBe('123');
-    expect(result.role).toBe('admin');
-  });
-
-  it('throws TokenError for expired tokens', async () => {
-    const expired = createTestJWT({ exp: Date.now() / 1000 - 3600 });
-    await expect(validateToken(expired)).rejects.toThrow(TokenError);
-  });
-});
-EOF
-
-# Step 2: Run test (confirms it fails)
-npm test -- tests/auth.test.ts
-
-# Step 3: Prompt Claude
-claude "Make the tests in tests/auth.test.ts pass.
-        Create src/auth.ts with validateToken function.
-        Use jose library for JWT validation.
-        Follow existing code patterns in src/"
-
-# Step 4: Run tests again, iterate if needed
-npm test -- tests/auth.test.ts
+### Requirements
+- Validate JWT tokens and extract user data
+- Return userId and role from valid tokens
+- Throw TokenError for expired tokens
+- Use jose library for JWT handling
 ```
+
+**Step 2: Give spec to Claude**
+```
+Here's my feature spec: [paste spec]
+
+Ask me clarifying questions, then:
+1. Propose tests based on requirements
+2. Wait for my approval
+3. Implement to pass the tests
+```
+
+**Step 3: Claude asks context questions**
+```
+"Where should this module live? What's your error handling pattern?"
+```
+
+**Step 4: Claude proposes tests, you approve**
+
+**Step 5: Claude implements, tests pass, you review the code**
 
 ### 3.3 Daily Workflow Integration
 

@@ -2,6 +2,16 @@
 
 Transform your team from manual coders into **Architects and Reviewers** with Claude Code.
 
+## The Core Workflow
+
+```
+Specify → Context → Generate Tests → Generate Code → Validate
+  [You]   [Claude]    [Claude]        [Claude]       [You]
+```
+
+**Your job**: Define WHAT should exist (PRD, spec, user story)
+**Claude's job**: Figure out HOW, with your approval at checkpoints
+
 ## What's Included
 
 ### 1. Strategic Roadmap
@@ -10,9 +20,9 @@ Transform your team from manual coders into **Architects and Reviewers** with Cl
 
 A self-paced guide covering:
 - Environment setup and security
+- The Specification-Driven workflow
 - MCP integration (optional)
-- The Test-Driven Agentic workflow
-- Governance with git hooks
+- Governance with git hooks (optional)
 
 ### 2. Interactive Onboarding Skill
 
@@ -23,8 +33,8 @@ Hands-on training with 5 modules:
 | Module | Topic | Required? |
 |--------|-------|-----------|
 | Foundation | CLAUDE.md and context | Yes |
+| Spec-Driven Dev | Write specs, review generated code | Yes (core) |
 | MCP | External tool integration | Optional |
-| TDA Cycle | Test-driven development | Yes (core) |
 | Governance | Git hooks | Optional |
 | Skills | Custom workflows | Yes |
 
@@ -41,13 +51,43 @@ cp -r the-agentic-shift/agentic-shift-skill ~/.claude/skills/agentic-shift-onboa
 claude /onboard
 ```
 
-## The Core Workflow
+## Example: The New Way to Build Features
 
-```
-Write tests → Prompt Claude → Run tests → Iterate
+**1. You write a spec:**
+```markdown
+## Feature: User Registration
+
+### Requirements
+- POST /api/users endpoint
+- Accept email and password
+- Validate email format, password min 8 chars
+- Return 400 for validation errors
+- Return 409 if email exists
 ```
 
-This is the Test-Driven Agentic (TDA) cycle. Everything else supports this pattern.
+**2. Give spec to Claude:**
+```
+Here's my feature spec: [paste spec]
+
+Ask me clarifying questions about my codebase, then:
+1. Propose tests based on requirements
+2. Wait for my approval
+3. Implement code to pass the tests
+```
+
+**3. Answer Claude's questions:**
+```
+"We use Prisma + PostgreSQL. Put it in src/routes/users.ts.
+Use bcrypt for passwords. Errors are { error: string, code: number }."
+```
+
+**4. Review generated tests, approve, validate implementation.**
+
+## Templates
+
+- `SPEC.md.template` - Feature specification template
+- `CLAUDE.md.template` - Project context template
+- `pre-commit.template` - Security hook
 
 ## Requirements
 

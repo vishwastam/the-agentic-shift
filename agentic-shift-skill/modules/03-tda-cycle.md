@@ -1,287 +1,318 @@
-# Module 3: Test-Driven Agentic (TDA) Development
+# Module 3: Specification-Driven Development
 
 ## Learning Objectives
 
 By the end of this module, learners will:
-- Understand the philosophy: "Tests are your specification language"
-- Write failing tests that define desired behavior
-- Prompt Claude effectively to implement solutions
-- Iterate based on test output until all tests pass
+- Write effective specifications (PRDs, user stories, or feature briefs)
+- Guide Claude through context gathering
+- Review Claude-generated tests before implementation
+- Validate generated code through automated testing
 
-## The TDA Philosophy
+## The New Workflow
 
-### Teaching Points
-
-Explain:
-
-1. **Traditional TDD**: Write test → Write code → Refactor
-2. **Agentic TDA**: Write test → Prompt Claude → Review & iterate
-
-The key insight: **Your tests become your prompts.** Instead of describing what you want in natural language, you express it in executable specifications.
-
-### Why TDA Works
-
-| Aspect | Natural Language Prompt | Test-Based Specification |
-|--------|------------------------|--------------------------|
-| Precision | "Handle edge cases" | `expect(fn(null)).toThrow()` |
-| Verification | Manual review | Automated pass/fail |
-| Iteration | Unclear what failed | Exact failure location |
-| Documentation | Lost after generation | Tests persist as specs |
-
-## The TDA Cycle
-
+### Old Way (Manual)
 ```
-    ┌─────────────────────────────────────────┐
-    │                                         │
-    │   1. WRITE        2. PROMPT             │
-    │      TEST    →       CLAUDE             │
-    │   [Human]         [Agent]               │
-    │                                         │
-    │        ↑              ↓                 │
-    │                                         │
-    │   4. REFINE  ←    3. RUN                │
-    │      PROMPT        TESTS                │
-    │   [If failing]    [Automated]           │
-    │                                         │
-    └─────────────────────────────────────────┘
+Developer writes code → Developer writes tests → Debug → Repeat
 ```
 
-### Step 1: WRITE TEST (Human)
-You define WHAT the code should do, not HOW.
+### Agentic Way
+```
+Specify → Context → Generate Tests → Generate Code → Validate
+  [You]    [Claude]    [Claude]        [Claude]       [You]
+```
 
-### Step 2: PROMPT CLAUDE (Agent)
-Claude implements code to satisfy your specification.
+**Your job**: Define WHAT you want
+**Claude's job**: Figure out HOW, with your approval at checkpoints
 
-### Step 3: RUN TESTS (Automated)
-Tests provide objective feedback on correctness.
+## The Specification-Driven Cycle
 
-### Step 4: REFINE PROMPT (If needed)
-If tests fail, the error output guides your next prompt.
+```
+┌─────────────────────────────────────────────────────────────┐
+│                                                             │
+│  1. SPECIFY          2. CONTEXT         3. GENERATE         │
+│     (You write)         (Claude asks)      (Claude writes)  │
+│                                                             │
+│  "I need a user       "What auth do      Tests first,       │
+│   registration        you use? Where     then code to       │
+│   endpoint..."        do users live?"    pass them          │
+│                                                             │
+│         │                  │                   │            │
+│         └────────┬─────────┴───────────────────┘            │
+│                  ▼                                          │
+│           4. VALIDATE                                       │
+│              (You review)                                   │
+│                                                             │
+│           Run tests, review code,                           │
+│           approve or iterate                                │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
 
-## Lesson 3.1: Setup
+## Step 1: Write a Specification
 
-### What You Need
+A good spec answers: **What do I want to exist that doesn't exist yet?**
 
-A test framework for your language. Common options:
+### Spec Formats (Pick One)
 
-| Language | Framework | Install |
-|----------|-----------|---------|
-| JavaScript/TS | vitest, jest | `npm install -D vitest` |
-| Python | pytest | `pip install pytest` |
-| Go | built-in | (already included) |
-| Rust | built-in | (already included) |
+**User Story Format:**
+```markdown
+As a [user type]
+I want to [action]
+So that [benefit]
 
-If your project already has tests, you're ready. If not, install one now.
+Acceptance Criteria:
+- [ ] Criterion 1
+- [ ] Criterion 2
+```
 
-## Lesson 3.2: Writing Effective Test Specifications
+**Feature Brief Format:**
+```markdown
+## Feature: [Name]
 
-### Principles
+### Problem
+What problem does this solve?
 
-1. **Test behavior, not implementation**
-   - Good: `"returns user object with correct properties"`
-   - Bad: `"calls database.query with specific SQL"`
+### Solution
+What should happen?
 
-2. **One assertion per test** (when starting out)
-   - Easier to identify what failed
-   - Clearer prompts for Claude
+### Requirements
+- Requirement 1
+- Requirement 2
 
-3. **Name tests as specifications**
-   - Good: `it('rejects passwords shorter than 8 characters')`
-   - Bad: `it('test1')`
+### Out of Scope
+- What this does NOT include
+```
 
-4. **Include edge cases**
-   - Null inputs
-   - Empty strings/arrays
-   - Boundary values
+**Simple Format:**
+```markdown
+## [Feature Name]
 
-### Example: Good Test Suite
+Build a function/endpoint/component that:
+- Does X
+- Handles Y
+- Returns Z
+
+Constraints:
+- Must work with existing [system]
+- Should not break [thing]
+```
+
+### Example Spec
+
+```markdown
+## Feature: User Registration API
+
+### Problem
+Users can't create accounts in our system.
+
+### Solution
+Create a POST /api/users endpoint that registers new users.
+
+### Requirements
+- Accept email and password
+- Validate email format
+- Require password minimum 8 characters
+- Hash password before storing
+- Return user object (without password)
+- Return 400 for validation errors
+- Return 409 if email already exists
+
+### Out of Scope
+- Email verification (separate feature)
+- OAuth/social login
+```
+
+## Step 2: Context Gathering
+
+After you provide a spec, Claude should ask clarifying questions. **Answer honestly** - this is where tribal knowledge gets captured.
+
+### Questions Claude Should Ask
+
+```
+Based on your spec, I have some questions:
+
+1. Architecture: Where does this fit?
+   - Which directory/module?
+   - Any existing patterns to follow?
+
+2. Dependencies: What already exists?
+   - Database/ORM you're using?
+   - Existing auth/validation utilities?
+   - Error handling conventions?
+
+3. Constraints: What should I avoid?
+   - Protected files?
+   - Deprecated patterns?
+
+4. Testing: How do you test?
+   - Test framework?
+   - Where do tests live?
+   - Any test utilities?
+```
+
+### Example Context Exchange
+
+**You**: [paste spec from above]
+
+**Claude**: "I have some questions:
+1. What database/ORM do you use for users?
+2. Where should this endpoint live?
+3. What's your password hashing approach?
+4. What does your error response format look like?"
+
+**You**: "We use Prisma with PostgreSQL. Put it in src/routes/users.ts. Use bcrypt for passwords. Errors are { error: string, code: number }."
+
+Now Claude has real context, not assumptions.
+
+## Step 3: Test Generation
+
+Claude proposes tests based on your spec. **Review them before implementation.**
+
+### What Claude Should Generate
 
 ```typescript
-describe('validateEmail', () => {
-  it('returns true for valid email addresses', () => {
-    expect(validateEmail('user@example.com')).toBe(true);
-    expect(validateEmail('name.surname@domain.co.uk')).toBe(true);
+// Claude generates tests from your requirements:
+
+describe('POST /api/users', () => {
+  it('creates user with valid email and password', async () => {
+    const res = await request(app)
+      .post('/api/users')
+      .send({ email: 'test@example.com', password: 'password123' });
+
+    expect(res.status).toBe(201);
+    expect(res.body.email).toBe('test@example.com');
+    expect(res.body.password).toBeUndefined(); // Not exposed
   });
 
-  it('returns false for emails without @ symbol', () => {
-    expect(validateEmail('userexample.com')).toBe(false);
+  it('returns 400 for invalid email', async () => {
+    const res = await request(app)
+      .post('/api/users')
+      .send({ email: 'invalid', password: 'password123' });
+
+    expect(res.status).toBe(400);
   });
 
-  it('returns false for emails without domain', () => {
-    expect(validateEmail('user@')).toBe(false);
+  it('returns 400 for short password', async () => {
+    const res = await request(app)
+      .post('/api/users')
+      .send({ email: 'test@example.com', password: '123' });
+
+    expect(res.status).toBe(400);
   });
 
-  it('returns false for empty string', () => {
-    expect(validateEmail('')).toBe(false);
-  });
+  it('returns 409 for duplicate email', async () => {
+    // Create user first, then try again
+    await createUser({ email: 'test@example.com' });
 
-  it('returns false for null or undefined', () => {
-    expect(validateEmail(null)).toBe(false);
-    expect(validateEmail(undefined)).toBe(false);
+    const res = await request(app)
+      .post('/api/users')
+      .send({ email: 'test@example.com', password: 'password123' });
+
+    expect(res.status).toBe(409);
   });
 });
 ```
 
-## Interactive Exercise 3.1: Your First TDA Cycle
+### Your Review Checkpoint
 
-### Scenario Selection
+Before Claude implements, review the tests:
+- Do they cover all requirements?
+- Are edge cases handled?
+- Do they match your testing patterns?
 
-Ask the learner what they'd like to build. Offer options based on their project:
+Say "yes" to proceed, or "add test for X" to expand.
 
-**Option A: Utility Function**
-A string manipulation or data transformation function
+## Step 4: Code Generation & Validation
 
-**Option B: Validation Logic**
-Input validation for a form or API
+Claude implements code to pass the tests, then you validate.
 
-**Option C: Business Logic**
-A domain-specific calculation or rule
-
-**Option D: API Helper**
-A function that processes API responses
-
-### Exercise: Build a Slug Generator
-
-If they don't have a preference, use this universal example:
-
-**Step 1: Write the Tests**
-
-Guide them to create this test file:
-
-```typescript
-// tests/slug.test.ts (or .js, .py, etc.)
-import { describe, it, expect } from 'vitest';
-import { generateSlug } from '../src/slug';
-
-describe('generateSlug', () => {
-  it('converts text to lowercase', () => {
-    expect(generateSlug('Hello World')).toBe('hello-world');
-  });
-
-  it('replaces spaces with hyphens', () => {
-    expect(generateSlug('my blog post')).toBe('my-blog-post');
-  });
-
-  it('removes special characters', () => {
-    expect(generateSlug('Hello! How are you?')).toBe('hello-how-are-you');
-  });
-
-  it('collapses multiple hyphens into one', () => {
-    expect(generateSlug('hello   world')).toBe('hello-world');
-  });
-
-  it('trims leading and trailing hyphens', () => {
-    expect(generateSlug('  hello world  ')).toBe('hello-world');
-  });
-
-  it('handles empty string', () => {
-    expect(generateSlug('')).toBe('');
-  });
-
-  it('handles strings with only special characters', () => {
-    expect(generateSlug('!@#$%')).toBe('');
-  });
-});
-```
-
-**Step 2: Run Tests (Confirm Failure)**
-
-```bash
-npm test -- tests/slug.test.ts
-# or
-pytest tests/test_slug.py
-```
-
-Expected: All tests fail (module doesn't exist yet).
-
-**Step 3: Prompt Claude**
-
-Teach the optimal prompt structure:
+### The Loop
 
 ```
-Make the tests in tests/slug.test.ts pass.
+Claude: "Here's the implementation. Running tests..."
+Claude: "4/4 tests passing. Here's the code: [shows diff]"
 
-Create src/slug.ts (or appropriate path) with a generateSlug function.
+You: Review the diff
+  - Does it follow your patterns?
+  - Any security concerns?
+  - Approve or request changes
 
-Requirements from the tests:
+You: "Looks good" or "Change X to Y"
+```
+
+## Exercise: Your First Spec-Driven Feature
+
+### Step 1: Write Your Spec
+
+Pick something real for your project, or use this:
+
+```markdown
+## Feature: Slug Generator Utility
+
+### Problem
+Need to convert titles to URL-friendly slugs.
+
+### Requirements
 - Convert to lowercase
 - Replace spaces with hyphens
-- Remove special characters (keep only alphanumeric and hyphens)
-- Collapse multiple consecutive hyphens
-- Trim leading/trailing hyphens
+- Remove special characters
+- Handle empty strings
 
-Follow the coding patterns in this project.
+### Example
+"Hello World!" → "hello-world"
 ```
 
-**Step 4: Run Tests Again**
-
-```bash
-npm test -- tests/slug.test.ts
-```
-
-If all pass: Celebrate and analyze the generated code.
-
-If some fail: Move to Step 5.
-
-**Step 5: Iterate (If Needed)**
-
-When tests fail, the output guides the next prompt:
+### Step 2: Give Spec to Claude
 
 ```
-The test "handles strings with only special characters" is failing.
+Here's my feature spec:
 
-Expected: ''
-Received: '-'
+[paste spec]
 
-Update generateSlug to return empty string when input
-contains only special characters.
+Ask me any clarifying questions about my codebase, then:
+1. Propose tests based on the requirements
+2. Wait for my approval
+3. Implement code to pass the tests
 ```
 
-### Debrief
+### Step 3: Answer Context Questions
 
-After completing the cycle, discuss:
+Claude asks, you answer with real details about your project.
 
-1. How did the tests guide Claude's implementation?
-2. What would have happened without tests?
-3. How does this compare to describing requirements in English?
+### Step 4: Review Generated Tests
 
-## Lesson 3.3: Tips for Success
+Claude shows tests. You approve or adjust.
 
-### Start Small
-- Begin with 2-3 simple tests
-- Add complexity incrementally
-- One feature at a time
+### Step 5: Validate Implementation
 
-### When TDA Works Best
-- Utility functions
-- Business logic
-- Data transformations
-- API handlers
+Tests run, you review the code, done.
 
-### When to Skip TDA
-- UI/visual work → use visual review
-- Exploratory coding → prototype first
-- Performance work → use benchmarks
+## When This Works Best
+
+| Good Fit | Less Ideal |
+|----------|------------|
+| New features with clear requirements | Exploratory/research work |
+| Bug fixes (spec = "this should work") | UI/visual work |
+| API endpoints | Performance optimization |
+| Utility functions | Complex refactoring |
+| Business logic | |
 
 ## Checkpoint
 
 Module 3 is complete when:
-- [ ] You've completed one full TDA cycle (write test → prompt → run → iterate)
-- [ ] You understand why tests are better specifications than English descriptions
+- [ ] You've written a spec for a feature
+- [ ] Claude asked context questions and you answered
+- [ ] Claude generated tests from your spec
+- [ ] Tests pass with Claude's implementation
 
-## Transition
+## Key Takeaway
 
----
+**You are the architect. You define what should exist.**
 
-**Module 3 Complete!**
+Claude handles:
+- Asking the right questions
+- Writing tests from requirements
+- Implementing to pass tests
+- Iterating on feedback
 
-You've mastered the core workflow of agentic development. Writing tests first gives you:
-- Precise specifications
-- Automated verification
-- Clear iteration feedback
-
-Now let's ensure quality at scale with **Module 4: Governance** - automated quality gates that catch issues before they reach production.
-
-Type "next" or run `/onboard-governance` to continue.
-
----
+Your job is specification and validation, not implementation.

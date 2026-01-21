@@ -2,13 +2,19 @@
 
 Interactive onboarding for Claude Code. Learn to work as an **Architect and Reviewer**.
 
+## The Core Workflow
+
+```
+Specify → Context → Generate Tests → Generate Code → Validate
+  [You]   [Claude]    [Claude]        [Claude]       [You]
+```
+
+You define WHAT. Claude figures out HOW.
+
 ## Installation
 
 ```bash
-# Copy to your Claude Code skills directory
 cp -r agentic-shift-skill ~/.claude/skills/agentic-shift-onboard
-
-# Start the onboarding
 claude /onboard
 ```
 
@@ -18,34 +24,27 @@ claude /onboard
 |--------|-------|-----------|
 | 1 | **Foundation** - CLAUDE.md and context | Yes |
 | 2 | **MCP** - External tool integration | Optional |
-| 3 | **TDA Cycle** - Test-driven development | Yes (core) |
+| 3 | **Spec-Driven Dev** - The core workflow | Yes |
 | 4 | **Governance** - Git hooks | Optional |
-| 5 | **Skills** - Create custom workflows | Yes |
+| 5 | **Skills** - Custom workflows | Yes |
 
 ## Commands
 
 ```bash
 claude /onboard              # Full tutorial
-claude /onboard-foundation   # Module 1 only
-claude /onboard-mcp          # Module 2 only
-claude /onboard-tda          # Module 3 only
-claude /onboard-governance   # Module 4 only
-claude /onboard-skills       # Module 5 only
+claude /onboard-foundation   # Module 1
+claude /onboard-mcp          # Module 2 (optional)
+claude /onboard-tda          # Module 3 (core)
+claude /onboard-governance   # Module 4 (optional)
+claude /onboard-skills       # Module 5
 ```
 
-## Templates Included
+## Templates
 
-- `templates/CLAUDE.md.template` - Starter context file
-- `templates/pre-commit.template` - Basic security hook
-- `templates/pre-push.template` - Optional Claude-powered audit
-
-## The Core Workflow
-
-```
-Write tests → Prompt Claude → Run tests → Iterate
-```
-
-That's it. Everything else supports this loop.
+- `SPEC.md.template` - Feature specification
+- `CLAUDE.md.template` - Project context
+- `pre-commit.template` - Security hook
+- `pre-push.template` - Optional audit hook
 
 ## License
 
