@@ -1,45 +1,24 @@
-# Agentic Shift - Onboarding Skill
+# Agentic Shift Skill
 
-Interactive training for AI-assisted development.
+Interactive setup for AI-assisted development.
 
 ## Install
 
 ```bash
-cp -r agentic-shift-skill ~/.claude/skills/agentic-shift-onboard
-claude /onboard
+curl -sL https://raw.githubusercontent.com/vishwastam/the-agentic-shift/main/install.sh | bash
 ```
 
-## What You'll Learn
+## Use
 
+```bash
+claude /agentic-shift
 ```
-You write spec → Claude generates code → You approve
-```
 
-Takes 5-10 minutes to complete your first feature.
+## What Happens
 
-## Commands
+1. Asks about your project context
+2. Creates CLAUDE.md with your tech stack
+3. Walks you through your first AI-assisted feature
+4. Offers relevant add-ons (GitHub, Figma, security hooks)
 
-| Command | What it does |
-|---------|--------------|
-| `/onboard` | Full tutorial (recommended) |
-| `/onboard-foundation` | Just CLAUDE.md setup |
-| `/onboard-tda` | Just the core workflow |
-
-## Optional Add-ons
-
-Only install these when you need them:
-
-| Command | When to use |
-|---------|-------------|
-| `/onboard-mcp` | Need GitHub, Figma, or database access |
-| `/onboard-governance` | Want automated security checks |
-| `/onboard-skills` | Have repeatable workflows to automate |
-
-## Templates
-
-```
-templates/
-├── CLAUDE.md.template   # Project context (required)
-├── SPEC.md.template     # Feature specs (optional)
-└── pre-commit.template  # Security hook (optional)
-```
+Takes 5-10 minutes.

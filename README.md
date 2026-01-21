@@ -2,76 +2,56 @@
 
 Ship features faster with AI-assisted development.
 
-## Start Here
+## Install
 
-| I want to... | Go to |
-|--------------|-------|
-| **Get started in 5 minutes** | [Quick Start](QUICK_START.md) |
-| **Know if this is right for me** | [Limitations](LIMITATIONS.md) |
-| **Enterprise/compliance needs** | [Enterprise Guide](ENTERPRISE.md) |
-| **Deep dive on the workflow** | [Full Roadmap](THE_AGENTIC_SHIFT_ROADMAP.md) |
+```bash
+curl -sL https://raw.githubusercontent.com/vishwastam/the-agentic-shift/main/install.sh | bash
+```
 
-## The Workflow (30-second version)
+## Use
+
+```bash
+cd your-project
+claude /agentic-shift
+```
+
+The setup is interactive. It will:
+1. Ask about your project and context
+2. Create a minimal CLAUDE.md
+3. Walk you through your first AI-assisted feature
+
+Takes about 5 minutes.
+
+## What It Does
 
 ```
 You write spec → Claude asks questions → Claude generates code → You approve
 ```
 
-That's it. Everything else is optional.
-
-## Quick Start
-
-```bash
-# Prerequisites: Claude Code CLI installed and authenticated
-cd your-project
-claude /init
-# Add your tech stack to CLAUDE.md
-claude "Here's my feature spec: [paste spec]. Ask questions, then implement."
-```
-
-## What's in This Repo
-
-```
-├── QUICK_START.md          # 5-minute setup (start here)
-├── LIMITATIONS.md          # When NOT to use this
-├── ENTERPRISE.md           # Compliance, security, large orgs
-├── THE_AGENTIC_SHIFT_ROADMAP.md  # Full deep-dive guide
-│
-└── agentic-shift-skill/    # Interactive training (optional)
-    ├── modules/
-    │   ├── 01-foundation.md      # CLAUDE.md basics
-    │   ├── 02-mcp-mastery.md     # GitHub, Figma, DB connections (optional)
-    │   ├── 03-tda-cycle.md       # Core workflow (the important one)
-    │   ├── 04-governance.md      # Git hooks (optional)
-    │   └── 05-skill-creation.md  # Custom workflows (optional)
-    └── templates/
-        ├── CLAUDE.md.template
-        ├── SPEC.md.template
-        └── pre-commit.template
-```
-
-## Core vs Optional
-
-| Component | Required? | When to Use |
-|-----------|-----------|-------------|
-| CLAUDE.md | Yes | Always—gives Claude context |
-| Spec → Generate → Approve workflow | Yes | Every feature |
-| MCP integrations (GitHub, Figma, etc.) | No | If you need external tool access |
-| Pre-commit hooks | No | When you want automated security checks |
-| Custom skills | No | When you have repeatable workflows |
-| AI code review tools | No | When you want additional review layers |
+That's the core workflow. Optional add-ons (GitHub integration, Figma, security hooks) are offered based on your needs.
 
 ## Requirements
 
-- Claude Code CLI (`npm install -g @anthropic-ai/claude-code`)
+- [Claude Code CLI](https://docs.anthropic.com/claude-code) installed
 - Authenticated (`claude login`)
 
-## Install the Training Skill (Optional)
+## Manual Install
+
+If you prefer not to use the install script:
 
 ```bash
-cp -r agentic-shift-skill ~/.claude/skills/agentic-shift-onboard
-claude /onboard
+git clone https://github.com/vishwastam/the-agentic-shift.git
+cp -r the-agentic-shift/agentic-shift-skill ~/.claude/skills/agentic-shift
 ```
+
+## Documentation
+
+The skill is self-contained and interactive—you don't need to read docs to get started.
+
+For reference:
+- [LIMITATIONS.md](LIMITATIONS.md) — When AI-assisted dev isn't the right fit
+- [ENTERPRISE.md](ENTERPRISE.md) — Compliance, security, large organizations
+- [THE_AGENTIC_SHIFT_ROADMAP.md](THE_AGENTIC_SHIFT_ROADMAP.md) — Deep dive on the workflow
 
 ## License
 
