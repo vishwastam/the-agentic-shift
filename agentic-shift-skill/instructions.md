@@ -13,12 +13,12 @@ Guide users to become **Architects and Reviewers**—professionals who:
 ## The Core Philosophy
 
 ```
-Specify → Context → Generate Tests → Generate Code → Validate
-  [You]   [Claude]    [Claude]        [Claude]       [You]
+Specify → Context → Plan → Generate Tests → Generate Code → Validate
+  [You]   [Claude]  [Interactive]  [Claude]    [Claude]       [You]
 ```
 
 **User's job**: Define WHAT should exist
-**Claude's job**: Figure out HOW, with approval checkpoints
+**Claude's job**: Figure out HOW, with approval checkpoints (especially at Plan stage)
 
 ## Commands
 
@@ -42,6 +42,7 @@ Specify → Context → Generate Tests → Generate Code → Validate
 ### Module 3: Specification-Driven Development (Core)
 - Write a spec describing what you want
 - Answer Claude's context questions
+- Review and approve Claude's execution plan
 - Review Claude-generated tests
 - Validate Claude's implementation
 - **This is the most important module**
@@ -72,6 +73,7 @@ Specify → Context → Generate Tests → Generate Code → Validate
 4. SPEC-DRIVEN DEV (Module 3) - Do this before optional modules
    - Write a simple spec
    - Claude asks questions, user answers
+   - Claude creates execution plan, user approves
    - Claude proposes tests, user approves
    - Claude implements, user validates
    - Checkpoint: Full cycle completed
@@ -116,12 +118,13 @@ You're about to change how you work. Instead of writing every line of code, you'
 
 1. **Specify** what you want (a simple spec or user story)
 2. **Answer questions** about your codebase
-3. **Review** generated tests and code
-4. **Validate** the result
+3. **Approve** Claude's execution plan
+4. **Review** generated tests and code
+5. **Validate** the result
 
 The workflow:
 ```
-Specify → Context → Generate Tests → Generate Code → Validate
+Specify → Context → Plan → Generate Tests → Generate Code → Validate
 ```
 
 Let me check your environment, then we'll practice this workflow on a real feature.

@@ -5,6 +5,7 @@
 By the end of this module, learners will:
 - Write effective specifications (PRDs, user stories, or feature briefs)
 - Guide Claude through context gathering
+- Review and approve Claude's execution plan
 - Review Claude-generated tests before implementation
 - Validate generated code through automated testing
 
@@ -17,8 +18,8 @@ Developer writes code → Developer writes tests → Debug → Repeat
 
 ### Agentic Way
 ```
-Specify → Context → Generate Tests → Generate Code → Validate
-  [You]    [Claude]    [Claude]        [Claude]       [You]
+Specify → Context → Plan → Generate Tests → Generate Code → Validate
+  [You]   [Claude]  [Interactive]  [Claude]    [Claude]       [You]
 ```
 
 **Your job**: Define WHAT you want
@@ -27,25 +28,25 @@ Specify → Context → Generate Tests → Generate Code → Validate
 ## The Specification-Driven Cycle
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                                                             │
-│  1. SPECIFY          2. CONTEXT         3. GENERATE         │
-│     (You write)         (Claude asks)      (Claude writes)  │
-│                                                             │
-│  "I need a user       "What auth do      Tests first,       │
-│   registration        you use? Where     then code to       │
-│   endpoint..."        do users live?"    pass them          │
-│                                                             │
-│         │                  │                   │            │
-│         └────────┬─────────┴───────────────────┘            │
-│                  ▼                                          │
-│           4. VALIDATE                                       │
-│              (You review)                                   │
-│                                                             │
-│           Run tests, review code,                           │
-│           approve or iterate                                │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│  1. SPECIFY       2. CONTEXT        3. PLAN        4. GENERATE  │
+│     (You)            (Claude)          (Interactive)  (Claude)  │
+│                                                                 │
+│  "I need user      "What auth?      "Here's my      Tests first │
+│   registration"    Where do users   plan..."        then code   │
+│                    live?"           [You approve]               │
+│                                                                 │
+│         │              │                 │               │      │
+│         └──────────────┴─────────────────┴───────────────┘      │
+│                                 ▼                               │
+│                          5. VALIDATE                            │
+│                             (You review)                        │
+│                                                                 │
+│                    Run tests, review code,                      │
+│                    approve or iterate                           │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
 ## Step 1: Write a Specification
@@ -164,7 +165,72 @@ Based on your spec, I have some questions:
 
 Now Claude has real context, not assumptions.
 
-## Step 3: Test Generation
+## Step 3: Execution Planning
+
+After gathering context, Claude enters **plan mode** to create a detailed execution plan. This is an interactive checkpoint where you refine the approach before any code is written.
+
+### What Claude Presents
+
+```
+Based on your spec and context, here's my execution plan:
+
+## Execution Plan: User Registration API
+
+### Files to Create/Modify
+1. `src/routes/users.ts` - New file for user registration endpoint
+2. `src/routes/users.test.ts` - Test file
+3. `src/routes/index.ts` - Add route import
+
+### Implementation Steps
+1. Create Prisma schema update for User model (if needed)
+2. Write test cases covering all requirements
+3. Implement POST /api/users endpoint
+4. Add email validation using existing validator
+5. Integrate bcrypt for password hashing
+6. Add error handling following your { error, code } pattern
+
+### Dependencies
+- Using existing: `bcrypt`, `prisma`, email validator from `src/utils/validators`
+- No new dependencies needed
+
+### Questions Before Proceeding
+1. Should I run `prisma migrate` after schema changes?
+2. Do you want integration tests with a real DB or mocked?
+
+Does this plan look right? Any adjustments?
+```
+
+### Your Review Checkpoint
+
+At this stage, you can:
+- **Approve**: "Looks good, proceed"
+- **Adjust scope**: "Skip the Prisma migration, schema already exists"
+- **Add constraints**: "Use the test database for integration tests"
+- **Request changes**: "Also add rate limiting to the endpoint"
+
+### Example Plan Interaction
+
+**Claude**: "Here's my plan: [shows plan above]. Does this look right?"
+
+**You**: "Two changes: 1) Schema already exists, skip that step. 2) Add a test for rate limiting - max 5 requests per minute per IP."
+
+**Claude**: "Got it. Updated plan:
+- Removed Prisma schema step
+- Added rate limiting test case
+- Will use existing `rateLimiter` middleware from `src/middleware/`
+
+Ready to generate tests?"
+
+**You**: "Yes, proceed."
+
+### Why Plan Mode Matters
+
+- **Catches misunderstandings early** - Before code is written
+- **Surfaces hidden dependencies** - Claude might reference files you forgot about
+- **Gives you control** - You approve the approach, not just the output
+- **Saves iteration cycles** - Better plan = fewer rewrites
+
+## Step 4: Test Generation
 
 Claude proposes tests based on your spec. **Review them before implementation.**
 
@@ -222,7 +288,7 @@ Before Claude implements, review the tests:
 
 Say "yes" to proceed, or "add test for X" to expand.
 
-## Step 4: Code Generation & Validation
+## Step 5: Code Generation & Validation
 
 Claude implements code to pass the tests, then you validate.
 
@@ -270,20 +336,25 @@ Here's my feature spec:
 [paste spec]
 
 Ask me any clarifying questions about my codebase, then:
-1. Propose tests based on the requirements
-2. Wait for my approval
-3. Implement code to pass the tests
+1. Create an execution plan for my approval
+2. Propose tests based on the requirements
+3. Wait for my approval
+4. Implement code to pass the tests
 ```
 
 ### Step 3: Answer Context Questions
 
 Claude asks, you answer with real details about your project.
 
-### Step 4: Review Generated Tests
+### Step 4: Review Execution Plan
+
+Claude presents a plan. You approve, adjust, or add constraints.
+
+### Step 5: Review Generated Tests
 
 Claude shows tests. You approve or adjust.
 
-### Step 5: Validate Implementation
+### Step 6: Validate Implementation
 
 Tests run, you review the code, done.
 
@@ -302,6 +373,7 @@ Tests run, you review the code, done.
 Module 3 is complete when:
 - [ ] You've written a spec for a feature
 - [ ] Claude asked context questions and you answered
+- [ ] Claude presented an execution plan and you approved it
 - [ ] Claude generated tests from your spec
 - [ ] Tests pass with Claude's implementation
 
@@ -311,8 +383,9 @@ Module 3 is complete when:
 
 Claude handles:
 - Asking the right questions
+- Creating detailed execution plans
 - Writing tests from requirements
 - Implementing to pass tests
 - Iterating on feedback
 
-Your job is specification and validation, not implementation.
+Your job is specification, plan approval, and validation—not implementation.

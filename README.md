@@ -5,12 +5,12 @@ Transform your team from manual coders into **Architects and Reviewers** with Cl
 ## The Core Workflow
 
 ```
-Specify → Context → Generate Tests → Generate Code → Validate
-  [You]   [Claude]    [Claude]        [Claude]       [You]
+Specify → Context → Plan → Generate Tests → Generate Code → Validate
+  [You]   [Claude]  [Interactive]  [Claude]    [Claude]       [You]
 ```
 
 **Your job**: Define WHAT should exist (PRD, spec, user story)
-**Claude's job**: Figure out HOW, with your approval at checkpoints
+**Claude's job**: Figure out HOW, with your approval at checkpoints (especially the Plan)
 
 ## What's Included
 
@@ -70,9 +70,10 @@ claude /onboard
 Here's my feature spec: [paste spec]
 
 Ask me clarifying questions about my codebase, then:
-1. Propose tests based on requirements
-2. Wait for my approval
-3. Implement code to pass the tests
+1. Create an execution plan for my approval
+2. Propose tests based on requirements
+3. Wait for my approval
+4. Implement code to pass the tests
 ```
 
 **3. Answer Claude's questions:**
@@ -81,7 +82,9 @@ Ask me clarifying questions about my codebase, then:
 Use bcrypt for passwords. Errors are { error: string, code: number }."
 ```
 
-**4. Review generated tests, approve, validate implementation.**
+**4. Review execution plan, approve or adjust.**
+
+**5. Review generated tests, approve, validate implementation.**
 
 ## Templates
 

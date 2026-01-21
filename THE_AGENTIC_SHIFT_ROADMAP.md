@@ -222,25 +222,27 @@ claude "Send a test message to #engineering-test channel"
 This is the core workflow pattern:
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                                                             │
-│  1. SPECIFY          2. CONTEXT         3. GENERATE         │
-│     (You write)         (Claude asks)      (Claude writes)  │
-│                                                             │
-│  PRD/spec/story      "What patterns     Tests first,        │
-│  describing WHAT     do you use?"       then code           │
-│                                                             │
-│         └──────────────────┬────────────────────┘           │
-│                            ▼                                │
-│                     4. VALIDATE                             │
-│                        (You review)                         │
-│                                                             │
-│                  Run tests, review code,                    │
-│                  approve or iterate                         │
-└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│  1. SPECIFY       2. CONTEXT        3. PLAN        4. GENERATE  │
+│     (You)            (Claude)          (Interactive)  (Claude)  │
+│                                                                 │
+│  PRD/spec/story   "What patterns    "Here's my      Tests first │
+│  describing WHAT  do you use?"      execution       then code   │
+│                                     plan..."                    │
+│                                     [You approve]               │
+│                                                                 │
+│         └─────────────┴─────────────────┴───────────────┘       │
+│                                ▼                                │
+│                         5. VALIDATE                             │
+│                            (You review)                         │
+│                                                                 │
+│                   Run tests, review code,                       │
+│                   approve or iterate                            │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-**Key Principle**: You define WHAT should exist. Claude figures out HOW, with checkpoints for your approval.
+**Key Principle**: You define WHAT should exist. Claude figures out HOW, with checkpoints for your approval—especially at the Plan stage.
 
 #### Example Session
 
@@ -260,9 +262,10 @@ This is the core workflow pattern:
 Here's my feature spec: [paste spec]
 
 Ask me clarifying questions, then:
-1. Propose tests based on requirements
-2. Wait for my approval
-3. Implement to pass the tests
+1. Create an execution plan for my approval
+2. Propose tests based on requirements
+3. Wait for my approval
+4. Implement to pass the tests
 ```
 
 **Step 3: Claude asks context questions**
@@ -270,9 +273,15 @@ Ask me clarifying questions, then:
 "Where should this module live? What's your error handling pattern?"
 ```
 
-**Step 4: Claude proposes tests, you approve**
+**Step 4: Claude presents execution plan, you approve or adjust**
+```
+"Here's my plan: create src/auth/jwt.ts, add tests in src/auth/jwt.test.ts,
+use your existing TokenError class. Does this look right?"
+```
 
-**Step 5: Claude implements, tests pass, you review the code**
+**Step 5: Claude proposes tests, you approve**
+
+**Step 6: Claude implements, tests pass, you review the code**
 
 ### 3.3 Daily Workflow Integration
 

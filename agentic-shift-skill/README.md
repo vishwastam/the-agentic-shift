@@ -5,11 +5,11 @@ Interactive onboarding for Claude Code. Learn to work as an **Architect and Revi
 ## The Core Workflow
 
 ```
-Specify → Context → Generate Tests → Generate Code → Validate
-  [You]   [Claude]    [Claude]        [Claude]       [You]
+Specify → Context → Plan → Generate Tests → Generate Code → Validate
+  [You]   [Claude]  [Interactive]  [Claude]    [Claude]       [You]
 ```
 
-You define WHAT. Claude figures out HOW.
+You define WHAT. Claude figures out HOW (with your approval at the Plan stage).
 
 ## Installation
 
