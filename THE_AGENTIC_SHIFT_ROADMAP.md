@@ -20,7 +20,7 @@ The Agentic Shift transforms developers from manual coders into **Architects and
 
 ---
 
-## Phase 1: Foundation (Week 1-2)
+## Phase 1: Foundation
 
 ### 1.1 Environment Setup
 
@@ -39,12 +39,12 @@ claude --version
 
 #### Team Configuration Checklist
 
-| Component | Action | Owner |
+| Component | Action | Notes |
 |-----------|--------|-------|
-| API Access | Provision team API keys via Anthropic Console | DevOps |
-| SSO Integration | Configure SAML/OIDC if using enterprise auth | Security |
-| Usage Limits | Set per-developer token budgets | Engineering Lead |
-| Audit Logging | Enable API request logging | Compliance |
+| API Access | Provision API keys via Anthropic Console | Required for all setups |
+| SSO Integration | Configure SAML/OIDC | Enterprise only, skip if not needed |
+| Usage Limits | Set token budgets per developer | Recommended to avoid surprise costs |
+| Audit Logging | Enable API request logging | Optional, useful for compliance |
 
 #### Repository Initialization
 
@@ -61,76 +61,56 @@ claude /init
 
 #### Tier 1: Mandatory Controls
 
-Create `.claude/settings.json` in each repository:
+Document and communicate these security boundaries to your team:
 
-```json
-{
-  "permissions": {
-    "allowedTools": ["Read", "Edit", "Write", "Glob", "Grep", "Bash"],
-    "blockedCommands": [
-      "rm -rf /",
-      "rm -rf ~",
-      "DROP DATABASE",
-      "DROP TABLE",
-      "curl * | bash",
-      "wget * | sh",
-      "chmod 777",
-      "> /dev/sda"
-    ],
-    "requireConfirmation": [
-      "git push",
-      "git push --force",
-      "npm publish",
-      "docker push",
-      "terraform apply",
-      "kubectl delete"
-    ]
-  },
-  "secrets": {
-    "scanEnabled": true,
-    "blockOnDetection": true,
-    "patterns": [
-      "API_KEY",
-      "SECRET",
-      "PASSWORD",
-      "TOKEN",
-      "PRIVATE_KEY",
-      "AWS_ACCESS",
-      "GITHUB_TOKEN"
-    ]
-  }
-}
+**Commands requiring confirmation** (Claude Code prompts for these by default):
+- `git push`, `git push --force`
+- `npm publish`, `docker push`
+- `terraform apply`, `kubectl delete`
+- Any destructive file operations
+
+**Patterns to watch for** (add to your CLAUDE.md "Do NOT" section):
+- Hardcoded secrets, API keys, tokens
+- Direct database credential strings
+- `rm -rf` on system or home directories
+- Piping curl/wget output to shell
+
+**Team guidelines to document**:
+```markdown
+## Security Rules for Claude Code
+
+1. Never commit secrets - use environment variables
+2. Review all generated shell commands before confirming
+3. Don't allow Claude to modify CI/CD or infrastructure configs without review
+4. Keep sensitive files in .gitignore
 ```
 
 #### Tier 2: Code Review Gates
 
-Add to `.git/hooks/pre-commit`:
+Use pre-commit hooks for automated checks. See the `templates/` folder in the onboarding skill for ready-to-use hooks, or create your own:
 
+**Simple secrets detection** (no Claude required):
 ```bash
 #!/bin/bash
-set -e
-
-STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM)
-
-if [ -z "$STAGED_FILES" ]; then
-  exit 0
-fi
-
-echo "Running Claude security audit..."
-
-RESULT=$(claude --print "Review these staged files for security issues:
-$STAGED_FILES
-
-Check for: SQL injection, XSS, hardcoded secrets, insecure dependencies.
-Output ONLY: PASS or FAIL followed by a brief reason.")
-
-echo "$RESULT"
-
-if echo "$RESULT" | grep -qi "^FAIL"; then
-  echo "Security audit failed. Please fix issues before committing."
+# .git/hooks/pre-commit
+STAGED=$(git diff --cached --name-only --diff-filter=ACM)
+if grep -rE "(api[_-]?key|secret|password)\s*[:=]\s*['\"][^'\"]{8,}" $STAGED 2>/dev/null; then
+  echo "Potential secrets detected. Please review."
   exit 1
 fi
 ```
+
+**Claude-assisted review** (optional, for deeper analysis):
+```bash
+#!/bin/bash
+# Requires Claude Code CLI
+STAGED=$(git diff --cached --name-only --diff-filter=ACM)
+[ -z "$STAGED" ] && exit 0
+echo "Files to review: $STAGED"
+claude -p "Review these files for security issues: $STAGED. Be concise."
+```
+
+> **Tip**: Start with simple pattern matching. Add Claude-powered analysis once your team is comfortable with the basics.
 
 #### Tier 3: Network & Data Controls
 
@@ -143,7 +123,7 @@ fi
 
 ---
 
-## Phase 2: Tooling Integration (Week 3-4)
+## Phase 2: Tooling Integration
 
 ### 2.1 Model Context Protocol (MCP) Selection
 
@@ -212,7 +192,7 @@ claude "Send a test message to #engineering-test channel"
 
 ---
 
-## Phase 3: Workflow Transformation (Week 5-8)
+## Phase 3: Workflow Transformation
 
 ### 3.1 The Architect-Reviewer Model
 
@@ -327,107 +307,41 @@ claude "Review PR #123. Check for:
 
 ---
 
-## Phase 4: Governance & Compliance (Week 9-12)
+## Phase 4: Governance & Compliance
 
 ### 4.1 Pre-Push Audit Pipeline
 
-Create `.git/hooks/pre-push`:
+For comprehensive pre-push auditing, use the templates provided in `agentic-shift-skill/templates/`:
 
+- `pre-commit.template` - Fast checks before each commit
+- `pre-push.template` - Deeper analysis before pushing
+
+**Installation:**
 ```bash
-#!/bin/bash
-set -e
-
-echo "═══════════════════════════════════════"
-echo "  Claude Code Pre-Push Audit"
-echo "═══════════════════════════════════════"
-
-BRANCH=$(git rev-parse --abbrev-ref HEAD)
-CHANGED=$(git diff --name-only origin/main...HEAD 2>/dev/null || git diff --name-only HEAD~5...HEAD)
-
-if [ -z "$CHANGED" ]; then
-  echo "No changes to audit."
-  exit 0
-fi
-
-echo "Branch: $BRANCH"
-echo "Files changed:"
-echo "$CHANGED"
-echo ""
-
-# Security Analysis
-echo "→ Security Analysis..."
-SECURITY=$(claude --print "Analyze these files for OWASP Top 10 vulnerabilities:
-
-$CHANGED
-
-Check for:
-1. Injection flaws (SQL, command, LDAP)
-2. Broken authentication
-3. Sensitive data exposure
-4. XXE vulnerabilities
-5. Broken access control
-6. Security misconfiguration
-7. XSS vulnerabilities
-8. Insecure deserialization
-9. Using components with known vulnerabilities
-10. Insufficient logging
-
-Output format:
-SEVERITY: [CRITICAL|HIGH|MEDIUM|LOW|NONE]
-ISSUES: [list each issue, or 'None found']
-RECOMMENDATION: [action items]")
-
-echo "$SECURITY"
-echo ""
-
-if echo "$SECURITY" | grep -q "SEVERITY: CRITICAL"; then
-  echo "╔═══════════════════════════════════════╗"
-  echo "║  BLOCKED: Critical security issues    ║"
-  echo "╚═══════════════════════════════════════╝"
-  exit 1
-fi
-
-if echo "$SECURITY" | grep -q "SEVERITY: HIGH"; then
-  echo "⚠️  High severity issues found. Review before pushing."
-  read -p "Continue anyway? (y/N) " -n 1 -r
-  echo
-  if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-    exit 1
-  fi
-fi
-
-echo "✓ Security audit passed"
-echo ""
-
-# Style Compliance
-echo "→ Style Compliance Check..."
-claude --print "Review code style for: $CHANGED
-Report only violations of common best practices.
-Be concise - list file:line and issue only."
-
-echo ""
-echo "═══════════════════════════════════════"
-echo "  Audit Complete - Proceeding with push"
-echo "═══════════════════════════════════════"
-```
-
-Make executable:
-```bash
+cp templates/pre-push.template .git/hooks/pre-push
 chmod +x .git/hooks/pre-push
 ```
 
-### 4.2 Metrics & KPIs
+**What the hooks check:**
+- Hardcoded secrets and credentials
+- Common security anti-patterns
+- Code style violations (optional)
 
-Track these metrics to measure the transition's success:
+> **Start simple**: Begin with just the pre-commit hook. Add pre-push later once your team is comfortable with the workflow.
 
-| Metric | How to Measure | Baseline | Target |
-|--------|---------------|----------|--------|
-| **Time to First PR** | Git timestamps from branch creation to PR | 4+ hours | < 1 hour |
-| **PR Review Cycles** | Average rounds of feedback per PR | 3+ | < 2 |
-| **Bug Escape Rate** | Bugs found post-deploy / total deploys | > 10% | < 5% |
-| **Test Coverage Delta** | Coverage change per sprint | ±0% | +2% |
-| **Developer Satisfaction** | Quarterly NPS survey | Baseline | +20 points |
-| **Security Findings** | Critical/High issues in pre-push audit | N/A | 0 |
+### 4.2 Metrics & KPIs (Optional)
+
+Track these metrics if your team values data-driven improvement:
+
+| Metric | How to Measure | What to Look For |
+|--------|---------------|------------------|
+| **Time to First PR** | Git timestamps | Reduction over time |
+| **PR Review Cycles** | Rounds of feedback per PR | Fewer iterations needed |
+| **Bug Escape Rate** | Post-deploy bugs / total deploys | Decreasing trend |
+| **Test Coverage** | Coverage reports | Steady improvement |
+| **Developer Feedback** | Regular check-ins or surveys | Positive sentiment |
+
+> **Note**: Don't over-optimize for metrics. The goal is better developer experience, not perfect numbers.
 
 ### 4.3 Compliance Checklist
 
@@ -449,20 +363,19 @@ Before declaring the transition complete:
 ### Essential Commands
 
 ```bash
-# Initialize project
-claude /init
-
-# Run with specific context
-claude --context "Focus on security"
-
-# Print output without interaction
-claude --print "Summarize recent changes"
+# Start Claude Code in a project
+claude
 
 # Use a skill
 claude /skill-name
 
-# List available skills
+# Get help
 claude /help
+
+# Common prompting patterns
+claude "Explain how the auth module works"
+claude "Write tests for src/utils.ts"
+claude "Review my staged changes for issues"
 ```
 
 ### Effective Prompting Patterns
@@ -485,22 +398,34 @@ claude /help
 
 ---
 
-## Appendix: Rollout Timeline
+## Appendix: Self-Paced Milestone Tracker
 
-| Week | Phase | Milestone | Success Criteria |
-|------|-------|-----------|------------------|
-| 1 | Foundation | CLI installed | 100% of team authenticated |
-| 2 | Foundation | CLAUDE.md created | Every active repo has context |
-| 3 | Integration | First MCP | GitHub MCP working |
-| 4 | Integration | Full MCP suite | All critical integrations live |
-| 5 | Adoption | TDA training | Team completed Module 3 |
-| 6 | Adoption | First TDA feature | One feature shipped via TDA |
-| 7 | Governance | Hooks installed | Pre-push on all repos |
-| 8 | Governance | Metrics live | Dashboard tracking KPIs |
-| 9 | Optimization | First skill | Team-specific skill deployed |
-| 10 | Optimization | Skill library | 3+ skills in rotation |
-| 11 | Review | Retrospective | Feedback collected |
-| 12 | Complete | Full adoption | All targets met |
+Use this checklist to track your team's progress. Complete each phase before moving to the next.
+
+### Phase 1: Foundation
+- [ ] All developers have Claude Code CLI installed and authenticated
+- [ ] Every active repository has a CLAUDE.md file
+- [ ] Security guardrails documented and communicated
+
+### Phase 2: Tooling Integration
+- [ ] At least one MCP server configured (start with GitHub)
+- [ ] Team can query external systems through Claude
+- [ ] MCP configuration documented for new team members
+
+### Phase 3: Workflow Transformation
+- [ ] Team completed TDA training (Module 3 of onboarding)
+- [ ] At least one feature shipped using the TDA cycle
+- [ ] Daily workflow patterns established
+
+### Phase 4: Governance & Compliance
+- [ ] Pre-commit/pre-push hooks installed on all repositories
+- [ ] Metrics tracking operational (optional but recommended)
+- [ ] At least one team-specific skill created and shared
+
+### Graduation
+- [ ] Retrospective completed with team feedback
+- [ ] Documentation updated with team learnings
+- [ ] Continuous improvement process established
 
 ---
 

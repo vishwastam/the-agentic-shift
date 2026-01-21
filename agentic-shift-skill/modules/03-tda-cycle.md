@@ -58,39 +58,20 @@ Tests provide objective feedback on correctness.
 ### Step 4: REFINE PROMPT (If needed)
 If tests fail, the error output guides your next prompt.
 
-## Lesson 3.1: Detect Project Test Framework
+## Lesson 3.1: Setup
 
-### Discovery
+### What You Need
 
-First, identify what testing framework they use:
+A test framework for your language. Common options:
 
-```bash
-# Node.js projects
-grep -l "jest\|vitest\|mocha" package.json 2>/dev/null && echo "Found JS test framework"
+| Language | Framework | Install |
+|----------|-----------|---------|
+| JavaScript/TS | vitest, jest | `npm install -D vitest` |
+| Python | pytest | `pip install pytest` |
+| Go | built-in | (already included) |
+| Rust | built-in | (already included) |
 
-# Python projects
-test -f pytest.ini && echo "pytest"
-test -f setup.cfg && grep -q pytest setup.cfg && echo "pytest in setup.cfg"
-grep -l "pytest\|unittest" requirements*.txt 2>/dev/null && echo "Found Python test framework"
-
-# Go projects
-ls *_test.go 2>/dev/null && echo "Go tests present"
-
-# Rust projects
-grep -q "\[dev-dependencies\]" Cargo.toml 2>/dev/null && echo "Rust tests available"
-```
-
-If no test framework exists, help them set one up:
-
-**JavaScript/TypeScript**:
-```bash
-npm install -D vitest
-```
-
-**Python**:
-```bash
-pip install pytest
-```
+If your project already has tests, you're ready. If not, install one now.
 
 ## Lesson 3.2: Writing Effective Test Specifications
 
@@ -264,74 +245,29 @@ After completing the cycle, discuss:
 2. What would have happened without tests?
 3. How does this compare to describing requirements in English?
 
-## Lesson 3.3: Advanced TDA Patterns
+## Lesson 3.3: Tips for Success
 
-### Pattern: Incremental Complexity
+### Start Small
+- Begin with 2-3 simple tests
+- Add complexity incrementally
+- One feature at a time
 
-Start simple, add tests one at a time:
+### When TDA Works Best
+- Utility functions
+- Business logic
+- Data transformations
+- API handlers
 
-```
-Round 1: "Make the first test pass"
-Round 2: "Now also make the second test pass without breaking the first"
-Round 3: Continue...
-```
-
-### Pattern: Contract Testing
-
-For APIs or integrations:
-
-```typescript
-describe('UserAPI', () => {
-  it('GET /users/:id returns user shape', async () => {
-    const response = await api.get('/users/1');
-    expect(response).toMatchObject({
-      id: expect.any(Number),
-      email: expect.any(String),
-      createdAt: expect.any(String),
-    });
-  });
-});
-```
-
-### Pattern: Behavior Specification
-
-For complex business logic:
-
-```typescript
-describe('PricingCalculator', () => {
-  describe('when user has premium subscription', () => {
-    it('applies 20% discount', () => { /* ... */ });
-    it('waives shipping fee', () => { /* ... */ });
-  });
-
-  describe('when user has basic subscription', () => {
-    it('applies 5% discount', () => { /* ... */ });
-    it('charges shipping based on weight', () => { /* ... */ });
-  });
-});
-```
-
-## Lesson 3.4: When TDA Doesn't Fit
-
-Be honest about limitations:
-
-| Scenario | Better Approach |
-|----------|-----------------|
-| UI/UX work | Visual review, Playwright tests |
-| Exploratory coding | Prototype first, test later |
-| Performance tuning | Benchmarks, not unit tests |
-| Integration issues | Manual debugging, logs |
-
-TDA works best for **deterministic logic with clear inputs and outputs**.
+### When to Skip TDA
+- UI/visual work → use visual review
+- Exploratory coding → prototype first
+- Performance work → use benchmarks
 
 ## Checkpoint
 
 Module 3 is complete when:
-- [ ] User has written at least one test file with 3+ tests
-- [ ] Tests initially failed (proving they're real specifications)
-- [ ] Claude successfully generated code that passes all tests
-- [ ] User completed at least one iteration cycle (test failed → refined prompt → test passed)
-- [ ] User can explain why tests are better than natural language specs
+- [ ] You've completed one full TDA cycle (write test → prompt → run → iterate)
+- [ ] You understand why tests are better specifications than English descriptions
 
 ## Transition
 

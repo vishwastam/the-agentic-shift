@@ -1,110 +1,34 @@
-# {{PROJECT_NAME}}
+# Project Name
 
-{{PROJECT_DESCRIPTION}}
+Brief description of what this project does.
 
-## Overview
-
-{{OVERVIEW}}
-
-## Architecture
-
-```
-{{DIRECTORY_STRUCTURE}}
-```
-
-### Key Components
-
-{{KEY_COMPONENTS}}
-
-## Tech Stack
-
-- **Language**: {{LANGUAGE}}
-- **Framework**: {{FRAMEWORK}}
-- **Database**: {{DATABASE}}
-- **Key Dependencies**: {{DEPENDENCIES}}
-
-## Getting Started
+## Commands
 
 ```bash
-# Install dependencies
-{{INSTALL_COMMAND}}
-
-# Run development server
-{{DEV_COMMAND}}
-
-# Run tests
-{{TEST_COMMAND}}
-
-# Build for production
-{{BUILD_COMMAND}}
-
-# Lint/Format
-{{LINT_COMMAND}}
+npm install     # Install dependencies
+npm run dev     # Start development server
+npm test        # Run tests
+npm run build   # Build for production
 ```
 
-## Code Conventions
+## Structure
 
-### Naming
+- `src/` - Main source code
+- `tests/` - Test files
+- `public/` - Static assets
 
-- **Files**: {{FILE_NAMING}} (e.g., kebab-case, camelCase)
-- **Variables**: {{VARIABLE_NAMING}}
-- **Functions**: {{FUNCTION_NAMING}}
-- **Classes**: {{CLASS_NAMING}}
+## Rules
 
-### Formatting
-
-- **Indentation**: {{INDENTATION}} (e.g., 2 spaces, 4 spaces, tabs)
-- **Line Length**: {{LINE_LENGTH}} characters max
-- **Quotes**: {{QUOTE_STYLE}} (single/double)
-
-### Documentation
-
-- {{DOCUMENTATION_REQUIREMENTS}}
-
-## Key Patterns
-
-### Error Handling
-
-{{ERROR_HANDLING_PATTERN}}
-
-### API Response Format
-
-{{API_RESPONSE_FORMAT}}
-
-### Database Access
-
-{{DATABASE_ACCESS_PATTERN}}
-
-### Testing
-
-{{TESTING_PATTERN}}
+- Follow existing code patterns
+- Write tests for new features
+- Use TypeScript strict mode
 
 ## Do NOT
 
-- {{DO_NOT_1}}
-- {{DO_NOT_2}}
-- {{DO_NOT_3}}
-- {{DO_NOT_4}}
-
-## Important Files
-
-| File | Purpose |
-|------|---------|
-| {{IMPORTANT_FILE_1}} | {{PURPOSE_1}} |
-| {{IMPORTANT_FILE_2}} | {{PURPOSE_2}} |
-| {{IMPORTANT_FILE_3}} | {{PURPOSE_3}} |
-
-## Environment Variables
-
-| Variable | Description | Required |
-|----------|-------------|----------|
-| {{ENV_VAR_1}} | {{DESCRIPTION_1}} | Yes/No |
-| {{ENV_VAR_2}} | {{DESCRIPTION_2}} | Yes/No |
-
-## Deployment
-
-{{DEPLOYMENT_NOTES}}
+- Modify files in `dist/` or `build/`
+- Commit secrets or API keys
+- Skip error handling
 
 ---
 
-*Generated with The Agentic Shift onboarding skill*
+Delete sections you don't need. Add more as you discover what Claude needs to know.

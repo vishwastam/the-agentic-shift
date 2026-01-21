@@ -1,310 +1,113 @@
-# Module 2: MCP Mastery - External Tool Integration
+# Module 2: MCP Integration (Optional)
 
 ## Learning Objectives
 
 By the end of this module, learners will:
-- Understand what MCP (Model Context Protocol) servers provide
-- Configure at least one MCP server for their workflow
-- Successfully query external systems through Claude
+- Understand what MCP servers provide
+- Configure at least one MCP server (if beneficial for their workflow)
+- Know where to find additional MCP servers
+
+> **Note**: MCP is powerful but optional. Many teams get significant value from Claude Code without any MCP integration. Skip this module if you want to focus on the core workflow first.
 
 ## What is MCP?
 
-### Teaching Points
+**MCP (Model Context Protocol)** lets Claude access external tools and data in real-time:
+- Query GitHub issues and PRs
+- Explore database schemas
+- Read Slack messages
+- And more...
 
-Explain:
+### When to Use MCP
 
-1. **MCP = Real-time context** - Claude can access live data from your tools
-2. **Not just static docs** - Query GitHub issues, database schemas, Slack messages in real-time
-3. **Standardized protocol** - One integration pattern for many services
+| Situation | MCP Helpful? |
+|-----------|--------------|
+| You frequently reference GitHub issues | Yes |
+| You need database schema context | Yes |
+| You work with a single codebase | Maybe not |
+| You're just getting started | Skip for now |
 
-### Available MCP Servers
+## Quick Start: GitHub MCP
 
-| Server | What It Provides | Best For |
-|--------|-----------------|----------|
-| **GitHub** | Issues, PRs, code search, repo info | Code review, issue triage |
-| **Postgres** | Schema, tables, query execution | Database work, migrations |
-| **Slack** | Channels, messages, user info | Team communication |
-| **Filesystem** | Enhanced file operations | Large codebases |
-| **Memory** | Persistent key-value storage | Cross-session context |
-| **Puppeteer** | Browser automation | Testing, scraping |
-| **Brave Search** | Web search results | Research tasks |
+The most universally useful MCP. Here's how to set it up:
 
-## Lesson 2.1: Assess Integration Needs
+### Step 1: Create a GitHub Token
 
-### Discovery Questions
-
-Ask the learner:
-
-1. "Where does your team track issues and PRs?"
-   - GitHub → Configure GitHub MCP
-   - GitLab → Note: GitLab MCP may be community-maintained
-   - Jira → Configure Jira MCP
-
-2. "Do you work with databases directly?"
-   - PostgreSQL → Configure Postgres MCP
-   - MySQL → Configure MySQL MCP
-   - MongoDB → Configure MongoDB MCP
-
-3. "Where does your team communicate?"
-   - Slack → Configure Slack MCP
-   - Discord → Note available options
-
-4. "What would be MOST valuable to access through Claude right now?"
-
-Based on their answer, proceed with the most relevant MCP.
-
-## Lesson 2.2: MCP Configuration
-
-### Configuration File Location
-
-```bash
-# Check if MCP config exists
-CONFIG_FILE=~/.claude/mcp_servers.json
-test -f "$CONFIG_FILE" && echo "Config exists" || echo "Need to create config"
+```
+GitHub → Settings → Developer Settings → Personal Access Tokens → Tokens (classic)
+Create with scope: repo
 ```
 
-### Template Structure
+### Step 2: Set Environment Variable
+
+```bash
+# Add to your shell profile (~/.zshrc or ~/.bashrc)
+export GITHUB_TOKEN="ghp_your_token_here"
+source ~/.zshrc
+```
+
+### Step 3: Create MCP Config
+
+Create `~/.claude/mcp_servers.json`:
 
 ```json
 {
   "mcpServers": {
-    "server-name": {
+    "github": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-name"],
+      "args": ["-y", "@modelcontextprotocol/server-github"],
       "env": {
-        "REQUIRED_VAR": "value"
+        "GITHUB_TOKEN": "${GITHUB_TOKEN}"
       }
     }
   }
 }
 ```
 
-## Interactive Exercise 2.1: Configure GitHub MCP
+### Step 4: Restart Claude Code
 
-### Prerequisites
+The MCP will be available in your next session.
 
-1. User needs a GitHub Personal Access Token
-2. Token needs appropriate scopes (repo, read:org for org repos)
-
-### Steps
-
-1. **Create token** (if they don't have one):
-   ```
-   Go to: GitHub → Settings → Developer Settings → Personal Access Tokens → Tokens (classic)
-   Create with scopes: repo, read:org, read:user
-   ```
-
-2. **Set environment variable**:
-   ```bash
-   # Add to shell profile (~/.zshrc, ~/.bashrc, etc.)
-   export GITHUB_TOKEN="ghp_xxxxxxxxxxxxxxxxxxxx"
-
-   # Reload
-   source ~/.zshrc  # or restart terminal
-   ```
-
-3. **Create/update MCP config**:
-   ```json
-   {
-     "mcpServers": {
-       "github": {
-         "command": "npx",
-         "args": ["-y", "@modelcontextprotocol/server-github"],
-         "env": {
-           "GITHUB_TOKEN": "${GITHUB_TOKEN}"
-         }
-       }
-     }
-   }
-   ```
-
-4. **Write the config file**:
-   Create `~/.claude/mcp_servers.json` with the above content.
-
-5. **Restart Claude Code** to pick up the new MCP.
-
-### Verification
-
-Test GitHub MCP with these queries:
+### Test It
 
 ```
 "List open issues in this repository"
-"Show me the most recent 5 pull requests"
-"Search for files containing 'TODO' in this repo"
-"What branches exist and which is default?"
+"Summarize my recent PRs"
 ```
 
-## Interactive Exercise 2.2: Configure Postgres MCP (Alternative)
+## Other MCP Servers
 
-### Prerequisites
+| Server | Use Case | Setup |
+|--------|----------|-------|
+| Postgres | Database schema/queries | Requires `DATABASE_URL` |
+| Filesystem | Enhanced file ops | Path configuration |
+| Memory | Persistent storage | Minimal config |
 
-1. User needs database connection string
-2. Database should be accessible (local or remote with proper credentials)
+Find more at: [MCP Server Registry](https://github.com/modelcontextprotocol/servers)
 
-### Steps
+## Security Notes
 
-1. **Gather connection info**:
-   ```
-   Host: localhost (or remote host)
-   Port: 5432
-   Database: mydb
-   User: myuser
-   Password: mypassword
-   ```
-
-2. **Set environment variable**:
-   ```bash
-   export DATABASE_URL="postgresql://user:password@host:5432/dbname"
-   ```
-
-3. **Add to MCP config**:
-   ```json
-   {
-     "mcpServers": {
-       "postgres": {
-         "command": "npx",
-         "args": ["-y", "@modelcontextprotocol/server-postgres"],
-         "env": {
-           "DATABASE_URL": "${DATABASE_URL}"
-         }
-       }
-     }
-   }
-   ```
-
-### Verification
-
-Test Postgres MCP:
-
-```
-"What tables exist in the database?"
-"Describe the schema of the users table"
-"How many records are in each table?"
-"Write a query to find users created in the last 7 days"
-```
-
-## Interactive Exercise 2.3: Configure Slack MCP (Alternative)
-
-### Prerequisites
-
-1. Slack workspace admin access or ability to create apps
-2. Bot token with appropriate scopes
-
-### Steps
-
-1. **Create Slack App**:
-   ```
-   Go to: api.slack.com/apps → Create New App
-   Choose: From scratch
-   Add scopes: channels:read, chat:write, users:read
-   Install to workspace
-   Copy Bot User OAuth Token
-   ```
-
-2. **Set environment variable**:
-   ```bash
-   export SLACK_BOT_TOKEN="xoxb-xxxxxxxxxxxx"
-   ```
-
-3. **Add to MCP config**:
-   ```json
-   {
-     "mcpServers": {
-       "slack": {
-         "command": "npx",
-         "args": ["-y", "@modelcontextprotocol/server-slack"],
-         "env": {
-           "SLACK_BOT_TOKEN": "${SLACK_BOT_TOKEN}"
-         }
-       }
-     }
-   }
-   ```
-
-### Verification
-
-Test Slack MCP:
-
-```
-"List channels I have access to"
-"What are the most recent messages in #general?"
-"Send a test message to #test-channel: 'Hello from Claude!'"
-```
-
-## Lesson 2.3: MCP Best Practices
-
-### Security Considerations
-
-Teach:
-
-1. **Token scoping**: Use minimum required permissions
-2. **Environment variables**: Never hardcode tokens in config
-3. **Read-only first**: Start with read access, add write only if needed
-4. **Audit access**: Review what Claude accesses through MCPs
-
-### Workflow Integration
-
-Example workflows with MCP:
-
-**Morning standup with GitHub**:
-```
-"Summarize my PRs from yesterday, any reviews I need to do,
-and issues assigned to me"
-```
-
-**Database-aware development**:
-```
-"Based on our database schema, write a function that fetches
-a user with their orders from the last 30 days"
-```
-
-**Team sync with Slack**:
-```
-"Check #incidents for any active issues, summarize for me"
-```
+- Use minimum required token scopes
+- Never hardcode tokens in config files
+- Start with read-only access
+- Review MCP access periodically
 
 ## Troubleshooting
 
-### Common Issues
-
-| Issue | Solution |
-|-------|----------|
-| "MCP server not found" | Ensure `npx` is in PATH, try `npm install -g @modelcontextprotocol/server-name` |
-| "Authentication failed" | Verify token is set and has correct scopes |
-| "Connection refused" | Check network access, firewall rules, VPN requirements |
-| "Timeout" | Server may be slow; check if service is accessible manually |
-
-### Debug Steps
-
-```bash
-# Test if npx can find the server
-npx -y @modelcontextprotocol/server-github --help
-
-# Check environment variable
-echo $GITHUB_TOKEN
-
-# Test connection manually (for databases)
-psql $DATABASE_URL -c "SELECT 1"
-```
+| Issue | Fix |
+|-------|-----|
+| "Server not found" | Run `npx -y @modelcontextprotocol/server-github --help` to test |
+| "Auth failed" | Check `echo $GITHUB_TOKEN` is set |
+| No response | Restart Claude Code after config changes |
 
 ## Checkpoint
 
 Module 2 is complete when:
-- [ ] At least one MCP server is configured in `~/.claude/mcp_servers.json`
-- [ ] User successfully queried external data through Claude
-- [ ] User understands security implications of MCP access
-- [ ] User can explain how MCP improves their workflow
+- [ ] You've decided whether MCP is valuable for your workflow
+- [ ] If yes: at least one MCP configured and tested
+- [ ] If no: that's fine! Move to Module 3
 
-## Transition
+## Next
 
----
-
-**Module 2 Complete!**
-
-You've connected Claude to your real tools. Now Claude can access live data from your GitHub, database, or team communication platform.
-
-This context will be invaluable for the next module, where you'll learn the core workflow pattern: **Test-Driven Agentic Development**.
+Ready for the core workflow? **Module 3: Test-Driven Agentic** teaches the most important pattern.
 
 Type "next" or run `/onboard-tda` to continue.
-
----

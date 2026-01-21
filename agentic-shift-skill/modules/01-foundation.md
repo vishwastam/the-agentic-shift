@@ -61,116 +61,65 @@ Show them the difference by having Claude answer a question about their codebase
 
 ## Lesson 1.3: CLAUDE.md Structure
 
-### Required Sections
+### Minimum Viable CLAUDE.md (Start Here)
 
-Guide them through creating each section:
+A useful CLAUDE.md needs just 4 sections:
 
 ```markdown
 # Project Name
 
-One-line description of what this project does.
+Brief description of what this project does.
 
-## Overview
-
-2-3 paragraphs explaining:
-- The project's purpose
-- Key features
-- Target users/use case
-
-## Architecture
-
-Describe the high-level structure:
-- Main directories and their purposes
-- Key components and how they interact
-- Data flow through the system
-
-## Tech Stack
-
-List technologies used:
-- Language and version
-- Framework(s)
-- Database
-- Key dependencies
-
-## Getting Started
+## Commands
 
 ```bash
-# Install dependencies
-<command>
-
-# Run development server
-<command>
-
-# Run tests
-<command>
-
-# Build for production
-<command>
+npm install    # Install dependencies
+npm run dev    # Start dev server
+npm test       # Run tests
 ```
 
-## Code Conventions
+## Structure
 
-List team standards:
-- Naming conventions (camelCase, snake_case, etc.)
-- File organization patterns
-- Error handling approach
-- Testing requirements
+- `src/` - Main source code
+- `tests/` - Test files
+- `docs/` - Documentation
 
-## Key Patterns
+## Rules
 
-Describe patterns Claude should follow:
-- How services are structured
-- How API endpoints are defined
-- How database queries are written
-- How tests are organized
-
-## Do NOT
-
-Critical constraints for Claude:
-- Files/directories never to modify
-- Patterns to avoid
-- Security-sensitive areas
-- Deprecated approaches not to use
+- Follow existing code patterns
+- Don't modify files in `generated/`
+- Use TypeScript strict mode
 ```
+
+### Extended CLAUDE.md (Add Later)
+
+Once comfortable, expand with:
+- **Architecture**: How components interact
+- **Conventions**: Naming, formatting standards
+- **Patterns**: Error handling, API response format
+- **Do NOT**: Specific things to avoid
+
+> **Tip**: Start minimal. Add sections as you discover what Claude needs to know.
 
 ## Interactive Exercise 1.1: Build Your CLAUDE.md
 
-### Instruction to Claude
+### Quick Discovery (4 Questions)
 
-Guide the user through these questions, then generate their CLAUDE.md:
+Ask the user:
 
-**Discovery Questions:**
+1. "What's your project name and what does it do?"
 
-1. "What is your project called and what does it do in one sentence?"
+2. "What are your main commands?" (install, dev, test, build)
 
-2. "What's your primary programming language and framework?"
+3. "What are the key folders in your project?"
 
-3. "Describe your directory structure. What are the main folders and what's in them?"
+4. "Any important rules?" (things to always do or never do)
 
-4. "What commands do you run most often for development?"
-   - Installing dependencies
-   - Running the dev server
-   - Running tests
-   - Building/deploying
+### Generate
 
-5. "What coding conventions does your team follow?"
-   - Naming (variables, files, classes)
-   - Formatting (tabs/spaces, line length)
-   - Documentation requirements
+Create a minimal CLAUDE.md from their answers. Keep it under 30 lines to start.
 
-6. "Are there any patterns that should ALWAYS be followed in this codebase?"
-   - Error handling style
-   - API response format
-   - Database access patterns
-
-7. "What should Claude NEVER do in this project?"
-   - Protected files/folders
-   - Deprecated patterns
-   - Security-sensitive operations
-
-### Generation
-
-After gathering answers, generate a complete CLAUDE.md and write it to the project root.
+> **Tip**: You can always expand it later. A short, accurate CLAUDE.md beats a long, generic one.
 
 ## Verification
 

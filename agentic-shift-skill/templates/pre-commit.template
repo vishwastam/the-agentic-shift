@@ -1,7 +1,6 @@
 #!/bin/bash
 #
-# Claude-powered pre-commit hook
-# Performs fast security and quality checks before commit
+# Pre-commit hook: Basic security checks
 #
 # Installation:
 #   cp pre-commit.template .git/hooks/pre-commit
@@ -9,164 +8,41 @@
 #
 set -e
 
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "  Pre-Commit Security Scan"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-
-# Get staged files (excluding deleted files)
 STAGED=$(git diff --cached --name-only --diff-filter=ACM)
 
 if [ -z "$STAGED" ]; then
-  echo "No staged files. Skipping checks."
   exit 0
 fi
 
-echo "Scanning files:"
-echo "$STAGED" | sed 's/^/  /'
-echo ""
+echo "Pre-commit: Checking for secrets..."
 
-# ============================================
-# SECRETS DETECTION
-# ============================================
-echo "→ Checking for hardcoded secrets..."
-
-SECRETS_FOUND=0
-
-# Common secret patterns
-SECRET_PATTERNS=(
-  # API Keys
-  "api[_-]?key\s*[:=]\s*['\"][^'\"]{10,}"
-  "apikey\s*[:=]\s*['\"][^'\"]{10,}"
-
-  # Generic secrets
-  "secret[_-]?key\s*[:=]\s*['\"][^'\"]{10,}"
-  "private[_-]?key\s*[:=]\s*['\"][^'\"]{10,}"
-
-  # Passwords
-  "password\s*[:=]\s*['\"][^'\"]{6,}"
-  "passwd\s*[:=]\s*['\"][^'\"]{6,}"
-
-  # AWS
-  "AKIA[0-9A-Z]{16}"
-  "aws_access_key_id\s*[:=]"
-  "aws_secret_access_key\s*[:=]"
-
-  # GitHub
-  "ghp_[a-zA-Z0-9]{36}"
-  "github_token\s*[:=]"
-
-  # OpenAI/Anthropic
-  "sk-[a-zA-Z0-9]{48}"
-  "sk-ant-[a-zA-Z0-9-]{90,}"
-
-  # Database URLs with passwords
-  "postgres://[^:]+:[^@]+@"
-  "mysql://[^:]+:[^@]+@"
-  "mongodb://[^:]+:[^@]+@"
-
-  # Private keys
-  "-----BEGIN (RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----"
-)
-
-while IFS= read -r file; do
+# Check for common secret patterns
+FOUND=0
+for file in $STAGED; do
   if [ -f "$file" ]; then
-    for pattern in "${SECRET_PATTERNS[@]}"; do
-      if grep -HnE --color=never "$pattern" "$file" 2>/dev/null; then
-        SECRETS_FOUND=1
-      fi
-    done
+    # AWS keys
+    if grep -qE "AKIA[0-9A-Z]{16}" "$file" 2>/dev/null; then
+      echo "  ⚠ Possible AWS key in $file"
+      FOUND=1
+    fi
+    # GitHub tokens
+    if grep -qE "ghp_[a-zA-Z0-9]{36}" "$file" 2>/dev/null; then
+      echo "  ⚠ Possible GitHub token in $file"
+      FOUND=1
+    fi
+    # Generic secrets
+    if grep -qiE "(api_key|secret_key|password)\s*[:=]\s*['\"][^'\"]{8,}" "$file" 2>/dev/null; then
+      echo "  ⚠ Possible secret in $file"
+      FOUND=1
+    fi
   fi
-done <<< "$STAGED"
+done
 
-if [ $SECRETS_FOUND -eq 1 ]; then
+if [ $FOUND -eq 1 ]; then
   echo ""
-  echo "╔═══════════════════════════════════════════════════════════╗"
-  echo "║  BLOCKED: Potential secrets detected in staged files     ║"
-  echo "╚═══════════════════════════════════════════════════════════╝"
-  echo ""
-  echo "Actions:"
-  echo "  1. Remove the secrets from your code"
-  echo "  2. Use environment variables instead"
-  echo "  3. Add sensitive files to .gitignore"
-  echo ""
-  echo "If this is a false positive, bypass with:"
-  echo "  git commit --no-verify"
-  echo ""
+  echo "Potential secrets detected. Review before committing."
+  echo "To bypass: git commit --no-verify"
   exit 1
 fi
 
 echo "  ✓ No secrets detected"
-echo ""
-
-# ============================================
-# FILE SIZE CHECK
-# ============================================
-echo "→ Checking file sizes..."
-
-MAX_SIZE=1048576  # 1MB in bytes
-LARGE_FILES=0
-
-while IFS= read -r file; do
-  if [ -f "$file" ]; then
-    SIZE=$(wc -c < "$file")
-    if [ "$SIZE" -gt "$MAX_SIZE" ]; then
-      echo "  ⚠ Large file: $file ($(numfmt --to=iec-i --suffix=B $SIZE))"
-      LARGE_FILES=1
-    fi
-  fi
-done <<< "$STAGED"
-
-if [ $LARGE_FILES -eq 1 ]; then
-  echo ""
-  echo "Warning: Large files detected. Consider using Git LFS."
-  # Not blocking, just warning
-fi
-
-echo "  ✓ File sizes OK"
-echo ""
-
-# ============================================
-# CLAUDE ANALYSIS (Optional)
-# ============================================
-if command -v claude &> /dev/null; then
-  echo "→ Running Claude quick analysis..."
-
-  # Only analyze code files
-  CODE_FILES=$(echo "$STAGED" | grep -E '\.(js|ts|jsx|tsx|py|go|rs|java|rb|php|c|cpp|h)$' || true)
-
-  if [ -n "$CODE_FILES" ]; then
-    ANALYSIS=$(claude --print "Quick security scan of these staged files:
-$CODE_FILES
-
-Check for:
-1. Obvious injection vulnerabilities (SQL, command)
-2. Dangerous function calls (eval, exec, shell)
-3. Hardcoded credentials that grep might miss
-4. Debug code that shouldn't be committed
-
-Be concise. Respond in exactly this format:
-STATUS: [PASS|WARN|FAIL]
-ISSUES: [one-line summary or 'None found']" 2>/dev/null || echo "STATUS: PASS
-ISSUES: Claude unavailable")
-
-    echo "$ANALYSIS"
-    echo ""
-
-    if echo "$ANALYSIS" | grep -q "STATUS: FAIL"; then
-      echo "╔═══════════════════════════════════════╗"
-      echo "║  BLOCKED: Security issues detected    ║"
-      echo "╚═══════════════════════════════════════╝"
-      exit 1
-    fi
-  else
-    echo "  No code files to analyze"
-  fi
-else
-  echo "→ Claude CLI not found, skipping deep analysis"
-  echo "  Install with: npm install -g @anthropic-ai/claude-code"
-fi
-
-echo ""
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "  ✓ Pre-commit checks passed"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
